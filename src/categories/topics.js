@@ -10,6 +10,9 @@ const notifications = require('../notifications');
 const translator = require('../translator');
 const batch = require('../batch');
 
+const redis = require('redis');
+const client = redis.createClient();
+
 module.exports = function (Categories) {
 	Categories.getCategoryTopics = async function (data) {
 		let results = await plugins.hooks.fire('filter:category.topics.prepare', data);
@@ -24,6 +27,59 @@ module.exports = function (Categories) {
 
 		results = await plugins.hooks.fire('filter:category.topics.get', { cid: data.cid, topics: topicsData, uid: data.uid });
 		return { topics: results.topics, nextStart: data.stop + 1 };
+	};
+
+	Categories.searchTopics = async function (data) {
+		// Verify the structure of the data object
+		const { searchTerm, tag, cid, uid, start = 0, stop = 19 } = data;
+
+		// Let hooks fire to prepare for search
+		let searchResults = await plugins.hooks.fire('filter:category.topics.prepare', data);
+		
+		const tids = [];
+
+		if (searchTerm) {
+			let cursor = '0'; // Initialize cursor
+            {
+				// Scan through Redis keys matching the pattern "topic:*"
+				const categoryTopics = await client.scan(cursor, { MATCH: 'topic:*', COUNT: 100 });
+				cursor = categoryTopics.cursor;  // Update the cursor for next scan
+
+				const keys = categoryTopics.keys;  // List of keys in the key that matched the pattern
+
+				for (const key of keys) {
+					try {
+						// For each key, retrieve the "title" and "cid" field from the hash
+						const title = await client.hGet(key, 'title');
+						const categoryID = await client.hGet(key, 'cid');
+						
+						if (title && title.toLowerCase().includes(searchTerm.toLowerCase()) && categoryID && categoryID === cid) {
+							const tid = await client.hGet(key, 'tid'); 
+							tids.push(tid); 
+						}
+					} catch (error) {
+						console.error(`Error fetching data for search term ${searchTerm}:`, err);
+					}
+				}
+			} while (cursor !== '0'); // Continue scanning until cursor returns 0 (end of scan)
+		}
+
+		tids = [...new Set(tids)];
+
+		// Fetch topic data for the matched TIDs
+		let topicsData = await topics.getTopicsByTids(tids, uid);
+
+		// Filter topics based on user privileges
+		topicsData = await privileges.topics.filterTopicsByPrivilege(topicsData, uid);
+		
+		// Fire another plugin hook to allow modification of the topics
+		searchResults = await plugins.hooks.fire('filter:category.topics.search.get', {
+            cid: cid,
+            topics: topicsData,
+            uid: uid,
+        });
+
+		return { topics: searchResults.topics, nextStart: data.stop + 1 };
 	};
 
 	Categories.getTopicIds = async function (data) {

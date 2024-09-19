@@ -152,6 +152,49 @@ categoriesAPI.getTopics = async (caller, data) => {
 	return { ...result, privileges: userPrivileges };
 };
 
+// WIP
+categoriesAPI.searchTopics = async (caller, data) => {
+	data.query = data.query || {};
+	const [userPrivileges, settings, targetUid] = await Promise.all([
+		privileges.categories.get(data.cid, caller.uid),
+		user.getSettings(caller.uid),
+		user.getUidByUserslug(data.query.author),
+	]);
+
+	if (!userPrivileges.read) {
+		throw new Error('[[error:no-privileges]]');
+	}
+
+	const infScrollTopicsPerPage = 20;
+	const sort = data.sort || data.categoryTopicSort || meta.config.categoryTopicSort || 'recently_replied';
+
+	let start = Math.max(0, parseInt(data.after || 0, 10));
+
+	if (parseInt(data.direction, 10) === -1) {
+		start -= infScrollTopicsPerPage;
+	}
+
+	let stop = start + infScrollTopicsPerPage - 1;
+
+	start = Math.max(0, start);
+	stop = Math.max(0, stop);
+	const result = await categories.searchTopics({
+		searchTerm: data.query.searchTerm,
+		uid: caller.uid,
+		cid: data.cid,
+		start,
+		stop,
+		sort,
+		settings,
+		query: data.query,
+		tag: data.query.tag,
+		targetUid,
+	});
+	categories.modifyTopicsByPrivilege(result.topics, userPrivileges);
+
+	return { ...result, privileges: userPrivileges };
+};
+
 categoriesAPI.setWatchState = async (caller, { cid, state, uid }) => {
 	let targetUid = caller.uid;
 	const cids = Array.isArray(cid) ? cid.map(cid => parseInt(cid, 10)) : [parseInt(cid, 10)];
