@@ -24,69 +24,48 @@ module.exports = function (Categories) {
 
 		results = await plugins.hooks.fire('filter:category.topics.get', { cid: data.cid, topics: topicsData, uid: data.uid });
 
-		const keys = await db.scan({ match: 'topic:*' });
-		const searchTids = [];
-		for (const key of keys) {
-			try {
-				const topicObject = await db.getObject(key);
-				const title = topicObject.title;
-				const categoryID = topicObject.cid;
-				if (title && title.toLowerCase().includes("test".toLowerCase()) && categoryID && categoryID === data.cid) {	
-					searchTids.push(topicObject.tid);
-				}
-				
-			} catch (error) {
-				console.log(`Error fetching data`);
-			}
-		}
-		console.log(searchTids);
-
 		return { topics: results.topics, nextStart: data.stop + 1 };
 	};
 
 	Categories.searchTopics = async function (data) {
 		// Verify the structure of the data object
-		const { searchTerm, tag, cid, uid, start = 0, stop = 19 } = data;
+		const { searchTerm, cid, uid } = data;
 
 		// Let hooks fire to prepare for search
 		let searchResults = await plugins.hooks.fire('filter:category.topics.prepare', data);
-		
-		const tids = [];
+
+		let tids = [];
 
 		if (searchTerm) {
+			// Get all keys that match the topic:* pattern
 			const keys = await db.scan({ match: 'topic:*' });
 			const searchTids = [];
+
 			for (const key of keys) {
 				try {
+					// eslint-disable-next-line no-await-in-loop
 					const topicObject = await db.getObject(key);
-					const title = topicObject.title;
-					const categoryID = topicObject.cid;
-					if (title && title.toLowerCase().includes("test".toLowerCase()) && categoryID && categoryID === cid) {	
+					const { title, cid } = topicObject;
+					// Check if the title includes the search term and if the category ID matches
+					if (title && title.toLowerCase().includes(searchTerm.toLowerCase()) && cid && cid === data.cid) {
 						searchTids.push(topicObject.tid);
 					}
-					
 				} catch (error) {
 					console.log(`Error fetching data`);
 				}
 			}
-			console.log(searchTids);
-			
 		}
 
 		tids = [...new Set(tids)];
 
-		// Fetch topic data for the matched TIDs
 		let topicsData = await topics.getTopicsByTids(tids, uid);
-
-		// Filter topics based on user privileges
 		topicsData = await privileges.topics.filterTopicsByPrivilege(topicsData, uid);
-		
-		// Fire another plugin hook to allow modification of the topics
+
 		searchResults = await plugins.hooks.fire('filter:category.topics.search.get', {
-            cid: cid,
-            topics: topicsData,
-            uid: uid,
-        });
+			cid: cid,
+			topics: topicsData,
+			uid: uid,
+		});
 
 		return { topics: searchResults.topics, nextStart: data.stop + 1 };
 	};
