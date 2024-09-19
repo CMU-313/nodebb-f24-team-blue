@@ -10,9 +10,6 @@ const notifications = require('../notifications');
 const translator = require('../translator');
 const batch = require('../batch');
 
-const redis = require('redis');
-const client = redis.createClient();
-
 module.exports = function (Categories) {
 	Categories.getCategoryTopics = async function (data) {
 		let results = await plugins.hooks.fire('filter:category.topics.prepare', data);
@@ -26,6 +23,24 @@ module.exports = function (Categories) {
 		topics.calculateTopicIndices(topicsData, data.start);
 
 		results = await plugins.hooks.fire('filter:category.topics.get', { cid: data.cid, topics: topicsData, uid: data.uid });
+
+		const keys = await db.scan({ match: 'topic:*' });
+		const searchTids = [];
+		for (const key of keys) {
+			try {
+				const topicObject = await db.getObject(key);
+				const title = topicObject.title;
+				const categoryID = topicObject.cid;
+				if (title && title.toLowerCase().includes("test".toLowerCase()) && categoryID && categoryID === data.cid) {	
+					searchTids.push(topicObject.tid);
+				}
+				
+			} catch (error) {
+				console.log(`Error fetching data`);
+			}
+		}
+		console.log(searchTids);
+
 		return { topics: results.topics, nextStart: data.stop + 1 };
 	};
 
@@ -39,29 +54,23 @@ module.exports = function (Categories) {
 		const tids = [];
 
 		if (searchTerm) {
-			let cursor = '0'; // Initialize cursor
-            {
-				// Scan through Redis keys matching the pattern "topic:*"
-				const categoryTopics = await client.scan(cursor, { MATCH: 'topic:*', COUNT: 100 });
-				cursor = categoryTopics.cursor;  // Update the cursor for next scan
-
-				const keys = categoryTopics.keys;  // List of keys in the key that matched the pattern
-
-				for (const key of keys) {
-					try {
-						// For each key, retrieve the "title" and "cid" field from the hash
-						const title = await client.hGet(key, 'title');
-						const categoryID = await client.hGet(key, 'cid');
-						
-						if (title && title.toLowerCase().includes(searchTerm.toLowerCase()) && categoryID && categoryID === cid) {
-							const tid = await client.hGet(key, 'tid'); 
-							tids.push(tid); 
-						}
-					} catch (error) {
-						console.error(`Error fetching data for search term ${searchTerm}:`, err);
+			const keys = await db.scan({ match: 'topic:*' });
+			const searchTids = [];
+			for (const key of keys) {
+				try {
+					const topicObject = await db.getObject(key);
+					const title = topicObject.title;
+					const categoryID = topicObject.cid;
+					if (title && title.toLowerCase().includes("test".toLowerCase()) && categoryID && categoryID === cid) {	
+						searchTids.push(topicObject.tid);
 					}
+					
+				} catch (error) {
+					console.log(`Error fetching data`);
 				}
-			} while (cursor !== '0'); // Continue scanning until cursor returns 0 (end of scan)
+			}
+			console.log(searchTids);
+			
 		}
 
 		tids = [...new Set(tids)];
