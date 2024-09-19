@@ -46,7 +46,9 @@
 					{{{ end }}}
 				{{{ end }}}
 				<!-- only show login button if not logged in and doesn't have any posting privilege -->
-				
+				{{{ if (!loggedIn && (!privileges.topics:create && !canPost))}}}
+				<a component="category/post/guest" href="{config.relative_path}/login" class="btn btn-sm btn-primary">[[category:guest-login-post]]</a>
+				{{{ end }}}
 			</div>
 		</div>
 	</nav>
