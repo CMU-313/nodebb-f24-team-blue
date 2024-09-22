@@ -29,6 +29,9 @@ exports.get = async function (req, res, callback) {
 		return callback(new Error('[[error:invalid-data]]'));
 	}
 
+	// Add a flag for anonymous posting
+	data.templateData.postAnonymouslyEnabled = true;
+
 	if (data.templateData.disabled) {
 		res.render('', {
 			title: '[[modules:composer.compose]]',

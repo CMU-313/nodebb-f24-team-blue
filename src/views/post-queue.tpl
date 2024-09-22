@@ -75,13 +75,25 @@
 					<div class="row">
 						<div class="col-lg-2 col-12">
 							<strong>[[post-queue:user]]</strong>
+							
+							// classifying post type as anonymous
 							<div>
-								{{{ if posts.user.userslug}}}
-								<a href="{config.relative_path}/uid/{posts.user.uid}">{buildAvatar(posts.user, "24px", true, "not-responsive")} {posts.user.username}</a>
+								{{{ if posts.user.anonymous }}}
+    							<!-- If the user is anonymous, display 'Anonymous' instead of the username and avatar -->
+    								<span>Anonymous</span>
 								{{{ else }}}
-								{posts.user.username}
+    							<!-- Otherwise, display the user's avatar and username with a link to their profile -->
+    								{{{ if posts.user.userslug }}}
+        							<a href="{config.relative_path}/uid/{posts.user.uid}">
+            							{buildAvatar(posts.user, "24px", true, "not-responsive")} 
+            							{posts.user.username}
+        							</a>
+    								{{{ else }}}
+        								{posts.user.username}
+   	 								{{{ end }}}
 								{{{ end }}}
 							</div>
+
 						</div>
 						<div class="col-lg-3 col-12">
 							<strong>[[post-queue:category]]{{{ if posts.data.cid}}} <i class="fa fa-fw fa-edit" data-bs-toggle="tooltip" title="[[post-queue:category-editable]]"></i>{{{ end }}}</strong>
