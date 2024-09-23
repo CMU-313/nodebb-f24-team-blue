@@ -283,7 +283,6 @@ module.exports = function (Topics) {
 	}
 
 	function tagsMatch(t, tags) {
-		console.log("Checking if tags match using helper function");
 		const topicTagValues = t.tags.map(topicTag => topicTag.value);
 		return tags.every(tag => topicTagValues.includes(tag));
 	}
