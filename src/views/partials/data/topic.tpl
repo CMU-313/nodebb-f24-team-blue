@@ -15,6 +15,4 @@
             </a>
         {{{ end }}}
     </div>
-
-    <!-- Rest of your post content goes here -->
 </div>

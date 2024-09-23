@@ -192,10 +192,9 @@
 
 
 	"composer-anonymous-none": "None",
-	"composer-anonymous-student": "Anonymous Type 1",
-	"composer-anonymous-all": "Anonymous Type 2",
+	"composer-anonymous": "Anonymous User",
 
-	
+
 	"composer.uploading": "uploading...",
 	"composer.thumb-url-label": "Paste a topic thumbnail URL",
 	"composer.thumb-title": "Add a thumbnail to this topic",
