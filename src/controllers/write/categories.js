@@ -60,7 +60,7 @@ Categories.getTopics = async (req, res) => {
 
 Categories.searchTopics = async (req, res) => {
 	const { cid } = req.params;
-	const { searchTerm } = req.query;
+	const { searchTerm } = req.query; 
 
 	if (!searchTerm) {
 		return helpers.formatApiResponse(400, res, { error: 'Missing search term' });
