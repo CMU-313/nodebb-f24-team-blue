@@ -141,9 +141,17 @@ define('forum/category', [
 	}
 
 	function handleSearchTopics() {
-		$('[component="category/topic"]').on('click', async function () {
+		console.log("handleSearchTopics called");
+
+		const $searchInput = $('[component="category/controls"] .form-control');
+	
+		if (!$searchInput.length) {
+			console.error("Search input not found!");
+			return;  
+		}
+		$searchInput.on('keypress', async function () {
 			const searchInput = document.querySelector('#searchInput');
-			const searchTerm = searchInput.value.trim(); // User input
+			const searchTerm = searchInput.value.trim(); 
 			const cid = ajaxify.data.cid;
 
 			const { topics: data } = await api.get(`/categories/${cid}/searchTopics`, {
