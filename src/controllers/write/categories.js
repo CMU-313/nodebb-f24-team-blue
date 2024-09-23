@@ -58,6 +58,18 @@ Categories.getTopics = async (req, res) => {
 	helpers.formatApiResponse(200, res, result);
 };
 
+Categories.searchTopics = async (req, res) => {
+	const { cid } = req.params;
+	const { searchTerm } = req.query;
+
+	if (!searchTerm) {
+		return helpers.formatApiResponse(400, res, { error: 'Missing search term' });
+	}
+	const result = await api.categories.searchTopics(req, { ...req.query, cid });
+
+	helpers.formatApiResponse(200, res, result);
+};
+
 Categories.setWatchState = async (req, res) => {
 	const { cid } = req.params;
 	let { uid, state } = req.body;

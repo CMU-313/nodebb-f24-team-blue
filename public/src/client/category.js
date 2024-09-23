@@ -42,6 +42,9 @@ define('forum/category', [
 
 		handleLoadMoreSubcategories();
 
+		// Handler for searching topics (listens for submission of the search bar)
+		handleSearchTopics();
+
 		categorySelector.init($('[component="category-selector"]'), {
 			privilege: 'find',
 			parentCid: ajaxify.data.cid,
@@ -134,6 +137,33 @@ define('forum/category', [
 		}, function (data, done) {
 			hooks.fire('action:topics.loaded', { topics: data.topics });
 			callback(data, done);
+		});
+	}
+
+	function handleSearchTopics() {
+		$('[component="category/topic"]').on('click', async function () {
+			const searchInput = document.querySelector('#searchInput');
+			const searchTerm = searchInput.value.trim(); // User input
+			const cid = ajaxify.data.cid;
+
+			const { topics: data } = await api.get(`/categories/${cid}/searchTopics`, {
+				searchTerm: searchTerm,
+				after: 0, // First page of search results page
+				direction: 1, // Scroll direction forward
+			});
+			if (!data.length) {
+				document.querySelector('[component="category"]').innerHTML = '<li>No topics found.</li>';
+				return;
+			}
+			app.parseAndTranslate('category', 'topics', { topics: data }, function (html) {
+				html.find('.timeago').timeago();
+
+				// Clear the existing topics and append the new search results
+				const topicContainer = document.querySelector('[component="category"]');
+				topicContainer.innerHTML = '';
+				topicContainer.appendChild(html);
+			});
+			return false;
 		});
 	}
 

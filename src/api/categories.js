@@ -152,47 +152,34 @@ categoriesAPI.getTopics = async (caller, data) => {
 	return { ...result, privileges: userPrivileges };
 };
 
-// WIP
 categoriesAPI.searchTopics = async (caller, data) => {
-	data.query = data.query || {};
-	const [userPrivileges, settings, targetUid] = await Promise.all([
-		privileges.categories.get(data.cid, caller.uid),
-		user.getSettings(caller.uid),
-		user.getUidByUserslug(data.query.author),
-	]);
+	const { searchTerm, cid, query = {}, stop = 0, direction = 1 } = data;
+	const { uid } = caller;
 
-	if (!userPrivileges.read) {
-		throw new Error('[[error:no-privileges]]');
+	// Preprocessing checks for invalid category and missing search term
+	if (!cid) {
+		throw new Error('[[error:invalid-category]]');
 	}
 
-	const infScrollTopicsPerPage = 20;
-	const sort = data.sort || data.categoryTopicSort || meta.config.categoryTopicSort || 'recently_replied';
-
-	let start = Math.max(0, parseInt(data.after || 0, 10));
-
-	if (parseInt(data.direction, 10) === -1) {
-		start -= infScrollTopicsPerPage;
+	if (!searchTerm) {
+		throw new Error('[[error:missing-search-term]]');
 	}
 
-	let stop = start + infScrollTopicsPerPage - 1;
-
-	start = Math.max(0, start);
-	stop = Math.max(0, stop);
-	const result = await categories.searchTopics({
-		searchTerm: data.query.searchTerm,
-		uid: caller.uid,
-		cid: data.cid,
-		start,
+	const searchData = {
+		searchTerm,
+		cid,
+		uid,
+		query,
 		stop,
-		sort,
-		settings,
-		query: data.query,
-		tag: data.query.tag,
-		targetUid,
-	});
-	categories.modifyTopicsByPrivilege(result.topics, userPrivileges);
+		direction,
+	};
 
-	return { ...result, privileges: userPrivileges };
+	const searchResults = await categories.searchTopics(searchData);
+
+	return {
+		topics: searchResults.topics,
+		nextStart: searchResults.nextStart,
+	};
 };
 
 categoriesAPI.setWatchState = async (caller, { cid, state, uid }) => {
