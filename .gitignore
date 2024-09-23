@@ -73,3 +73,6 @@ test.sh
 
 .docker/**
 !**/.gitkeep
+
+# To push the frontend changes (mytheme theme updates) to github
+!node_modules/nodebb-theme-almannai/
