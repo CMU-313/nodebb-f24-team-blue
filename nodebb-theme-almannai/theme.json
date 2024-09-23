@@ -1,7 +1,0 @@
-{
-    "id": "nodebb-theme-almannai",
-    "name": "My Theme Name",
-    "description": "Enter a description here",
-    "url": "https://github.com/nodebb/nodebb-theme-quickstart",
-    "baseTheme": "nodebb-theme-harmony"
-}
