@@ -34,21 +34,20 @@ module.exports = function (Categories) {
 		// Let hooks fire to prepare for search
 		let searchResults = await plugins.hooks.fire('filter:category.topics.prepare', data);
 
-		let tids = [];
+		const searchTids = [];
 
 		if (searchTerm) {
 			// Get all keys that match the topic:* pattern
 			const keys = await db.scan({ match: 'topic:*' });
-			const searchTids = [];
 
 			for (const key of keys) {
 				try {
 					// eslint-disable-next-line no-await-in-loop
 					const topicObject = await db.getObject(key);
-					const { title, cid } = topicObject;
+					const { title, cid: topicCid, tid } = topicObject;
 					// Check if the title includes the search term and if the category ID matches
-					if (title && title.toLowerCase().includes(searchTerm.toLowerCase()) && cid && cid === data.cid) {
-						searchTids.push(topicObject.tid);
+					if (title && title.toLowerCase().includes(searchTerm.toLowerCase()) && topicCid && topicCid === cid) {
+						searchTids.push(tid);
 					}
 				} catch (error) {
 					console.log(`Error fetching data`);
@@ -56,10 +55,14 @@ module.exports = function (Categories) {
 			}
 		}
 
-		tids = [...new Set(tids)];
+		let topicsData = await topics.getTopicsByTids(searchTids, uid);
+		topicsData = await user.blocks.filter(data.uid, topicsData);
 
-		let topicsData = await topics.getTopicsByTids(tids, uid);
-		topicsData = await privileges.topics.filterTopicsByPrivilege(topicsData, uid);
+		if (!topicsData.length) {
+			return { topics: [], uid: data.uid };
+		}
+		
+		topics.calculateTopicIndices(topicsData, data.start);
 
 		searchResults = await plugins.hooks.fire('filter:category.topics.search.get', {
 			cid: cid,
