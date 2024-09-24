@@ -23,7 +23,6 @@ module.exports = function (Categories) {
 		topics.calculateTopicIndices(topicsData, data.start);
 
 		results = await plugins.hooks.fire('filter:category.topics.get', { cid: data.cid, topics: topicsData, uid: data.uid });
-
 		return { topics: results.topics, nextStart: data.stop + 1 };
 	};
 

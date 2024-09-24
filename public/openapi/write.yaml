@@ -128,6 +128,7 @@ paths:
     $ref: 'write/categories/cid/children.yaml'
   /categories/{cid}/topics:
     $ref: 'write/categories/cid/topics.yaml'
+  /categories/{cid}/searchTopics:
   /categories/{cid}/watch:
     $ref: 'write/categories/cid/watch.yaml'
   /categories/{cid}/privileges:
