@@ -61,7 +61,7 @@ module.exports = function (Categories) {
 		if (!topicsData.length) {
 			return { topics: [], uid: data.uid };
 		}
-		
+
 		topics.calculateTopicIndices(topicsData, data.start);
 
 		searchResults = await plugins.hooks.fire('filter:category.topics.search.get', {

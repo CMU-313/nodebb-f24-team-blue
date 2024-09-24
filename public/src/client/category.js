@@ -144,51 +144,31 @@ define('forum/category', [
 		const $searchInput = $('[component="category/controls"] .form-control');
 
 		$searchInput.on('keypress', async function (event) {
-			if (event.key === 'Enter') {  
+			if (event.key === 'Enter') {
 				event.preventDefault();
-				console.log('Searching topics...');
-	
-				const searchTerm = $searchInput.val().trim();  
+				const searchTerm = $searchInput.val().trim();
 				const cid = ajaxify.data.cid;
-	
-				if (!searchTerm) {
-					console.log("Search term is empty");
-					return;
-				}
-	
+
 				try {
 					const { topics: data } = await api.get(`/categories/${cid}/searchTopics`, {
 						searchTerm: searchTerm,
-						after: 0,  
-						direction: 1  
 					});
-	
+
 					if (!data.length) {
 						$('[component="category"]').html('<li>No topics found.</li>');
 						return;
 					}
 
-					console.log('Topics Found', data);					
-
-					app.parseAndTranslate('category', 'topics_list', { topics: data }, function (html) {
-						if (!html || !html.length) {
-							console.error('Template failed to render or no content.');
-							return;
-						}
-						
+					app.parseAndTranslate('partials/topics_list', { topics: data }, function (html) {
 						html.find('.timeago').timeago();
-						console.log('Parsed HTML:', html);  
-						console.log(JSON.stringify(data, null, 2)); 
-
-						const topicContainer = document.querySelector('[component="category"]');
-						topicContainer.innerHTML = '';
-						topicContainer.append(html);
-						
+						const topicContainer = $('[component="category"]');
+						topicContainer.html(html);
 					});
 				} catch (error) {
-					console.error("Error searching topics: ", error);
+					console.error('Error searching topics: ', error);
 				}
-		}});
+			}
+		});
 	}
 
 	return Category;
