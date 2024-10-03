@@ -268,86 +268,88 @@ Emailer.send = async (template, uid, params) => {
 };
 
 Emailer.sendToEmail = async (template, email, language, params) => {
-	const lang = language || meta.config.defaultLang || 'en-GB';
-	const unsubscribable = ['digest', 'notification'];
+    const lang = language || meta.config.defaultLang || 'en-GB';
+    const unsubscribable = ['digest', 'notification'];
 
-	// Digests and notifications can be one-click unsubbed
-	let payload = {
-		template: template,
-		uid: params.uid,
-	};
+    // Digests and notifications can be one-click unsubbed
+    let payload = {
+        template: template,
+        uid: params.uid,
+    };
 
-	if (unsubscribable.includes(template)) {
-		if (template === 'notification') {
-			payload.type = params.notification.type;
-		}
-		payload = jwt.sign(payload, nconf.get('secret'), {
-			expiresIn: '30d',
-		});
+    if (unsubscribable.includes(template)) {
+        if (template === 'notification') {
+            payload.type = params.notification.type;
+        }
+        payload = jwt.sign(payload, nconf.get('secret'), {
+            expiresIn: '30d',
+        });
 
-		const unsubUrl = [nconf.get('url'), 'email', 'unsubscribe', payload].join('/');
-		params.headers = {
-			'List-Id': `<${[template, params.uid, getHostname()].join('.')}>`,
-			'List-Unsubscribe': `<${unsubUrl}>`,
-			'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-			...params.headers,
-		};
-		params.unsubUrl = unsubUrl;
-	}
+        const unsubUrl = [nconf.get('url'), 'email', 'unsubscribe', payload].join('/');
+        params.headers = {
+            'List-Id': `<${[template, params.uid, getHostname()].join('.')}>`,
+            'List-Unsubscribe': `<${unsubUrl}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            ...params.headers,
+        };
+        params.unsubUrl = unsubUrl;
+    }
 
-	const result = await Plugins.hooks.fire('filter:email.params', {
-		template: template,
-		email: email,
-		language: lang,
-		params: params,
-	});
+    const result = await Plugins.hooks.fire('filter:email.params', {
+        template: template,
+        email: email,
+        language: lang,
+        params: params,
+    });
 
-	template = result.template;
-	email = result.email;
-	params = result.params;
+    template = result.template;
+    email = result.email;
+    params = result.params;
 
-	const [html, subject] = await Promise.all([
-		Emailer.renderAndTranslate(template, params, result.language),
-		translator.translate(params.subject, result.language),
-	]);
+    // Render HTML and translate the subject
+    const [subject] = await Promise.all([
+        translator.translate(params.subject, result.language),
+    ]);
 
-	const data = await Plugins.hooks.fire('filter:email.modify', {
-		_raw: params,
-		to: email,
-		from: meta.config['email:from'] || `no-reply@${getHostname()}`,
-		from_name: meta.config['email:from_name'] || 'NodeBB',
-		subject: `[${meta.config.title}] ${_.unescape(subject)}`,
-		html: html,
-		plaintext: htmlToText(html, {
-			tags: { img: { format: 'skip' } },
-		}),
-		template: template,
-		uid: params.uid,
-		pid: params.pid,
-		fromUid: params.fromUid,
-		headers: params.headers,
-		rtl: params.rtl,
-	});
-	const usingFallback = !Plugins.hooks.hasListeners('filter:email.send') &&
-		!Plugins.hooks.hasListeners('static:email.send');
-	try {
-		if (Plugins.hooks.hasListeners('filter:email.send')) {
-			// Deprecated, remove in v1.19.0
-			await Plugins.hooks.fire('filter:email.send', data);
-		} else if (Plugins.hooks.hasListeners('static:email.send')) {
-			await Plugins.hooks.fire('static:email.send', data);
-		} else {
-			await Emailer.sendViaFallback(data);
-		}
-	} catch (err) {
-		if (err.code === 'ENOENT' && usingFallback) {
-			Emailer.fallbackNotFound = true;
-			throw new Error('[[error:sendmail-not-found]]');
-		} else {
-			throw err;
-		}
-	}
+    // HTML version with dynamic content
+    const html = `
+        <p>Hello ${params.username},</p>
+        <p>You have received a new reply in the topic "<strong>${params.notification.title}</strong>".</p>
+        <p><strong>Reply content:</strong></p>
+        <p>${params.notification.content}</p>
+        <p>To view the reply, visit: <a href="${nconf.get('url')}/topic/${params.notification.topicSlug}">${nconf.get('url')}/topic/${params.notification.topicSlug}</a></p>
+        <p>If you wish to unsubscribe, click here: <a href="${params.unsubUrl}">${params.unsubUrl}</a></p>
+    `;
+
+    // Construct the plain text version as well
+    const text = `
+        Hello ${params.username},
+
+        You have received a new reply in the topic "${params.notification.title}".
+
+        Reply content: ${params.notification.content}
+
+        To view the reply, visit: ${nconf.get('url')}/topic/${params.notification.topicSlug}
+
+        If you wish to unsubscribe, click here: ${params.unsubUrl}
+    `;
+
+    // Send the email with both HTML and plain text content
+    const data = await Plugins.hooks.fire('filter:email.modify', {
+        _raw: params,
+        to: email,
+        from: meta.config['email:from'] || `no-reply@${getHostname()}`,
+        from_name: meta.config['email:from_name'] || 'NodeBB',
+        subject: `[${meta.config.title}] ${_.unescape(subject)}`,
+        html: html,  // HTML version
+        text: text,  // Plain text version
+        headers: params.headers,
+    });
+
+    await Emailer.fallbackTransport.sendMail(data);
 };
+
+
 
 Emailer.sendViaFallback = async (data) => {
 	// Some minor alterations to the data to conform to nodemailer standard
