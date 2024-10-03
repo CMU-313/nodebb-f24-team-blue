@@ -64,10 +64,17 @@ categoriesController.list = async function (req, res) {
 	res.render('categories', data);
 };
 
-categoriesController.renderAnonymousCategory = async function (req, res) {
+categoriesController.renderAnonymousCategory = async function (req, res, apiResponse = false) {
     try {
-        const posts = await anonymousPosts.getAnonymousPosts(); // Use the imported function
+        const posts = await anonymousPosts.getAnonymousPosts();
         console.log('Rendering anonymous category page with posts:', posts);
+        
+        // If the request is for the API, return the posts directly as JSON
+        if (apiResponse) {
+            return posts;  // Return the posts in JSON format for the API
+        }
+
+        // For regular page rendering
         res.render('anonymous-category', {
             title: 'Anonymous Category',
             template: 'anonymous-category',
@@ -77,6 +84,32 @@ categoriesController.renderAnonymousCategory = async function (req, res) {
     } catch (err) {
         console.error('Error rendering anonymous category:', err);
         res.status(500).send('Internal Server Error');
+    }
+};
+
+categoriesController.handleAnonymousPost = async function (req, res) {
+    try {
+        const isAnonymous = req.body.isAnonymous === 'true';
+        const { content, tid } = req.body;
+        
+        let postData = {
+            tid: tid,
+            content: content,
+        };
+
+        if (isAnonymous) {
+            postData.uid = 0;  // Anonymous posts use a UID of 0
+        } else {
+            postData.uid = req.uid;  // Use the real user’s ID
+        }
+
+        // Call the Posts.create function to save the post in the database
+        const pid = await Posts.create(postData);
+
+        res.json({ success: true, pid: pid });
+    } catch (err) {
+        console.error('Error handling anonymous post:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 

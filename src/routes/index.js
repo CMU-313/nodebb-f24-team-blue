@@ -42,7 +42,21 @@ _mounts.main = (app, middleware, controllers) => {
     app.post('/email/unsubscribe/:token', controllers.accounts.settings.unsubscribePost);
 
     app.post('/compose', middleware.applyCSRF, controllers.composer.post);
-	app.get('/anonymous-category', categoriesController.renderAnonymousCategory);
+	
+    app.get('/anonymous-category', (req, res, next) => {
+        console.log('Anonymous category route hit');  // Log this to check if the route is triggered
+        categoriesController.renderAnonymousCategory(req, res);
+    });
+
+	app.get('/api/anonymous-posts', async (req, res) => {
+		try {
+			const posts = await categoriesController.getAnonymousPosts();  // You'll implement this in the controller
+			res.json(posts);  // Send the posts as JSON
+		} catch (err) {
+			console.error('Error fetching anonymous posts:', err);
+			res.status(500).json({ error: 'Internal Server Error' });
+		}
+	});
 };
 
 _mounts.mod = (app, middleware, controllers) => {
