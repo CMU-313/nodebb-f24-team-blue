@@ -9,6 +9,7 @@ const meta = require('../meta');
 const controllers = require('../controllers');
 const controllerHelpers = require('../controllers/helpers');
 const plugins = require('../plugins');
+const categoriesController = require('../controllers/categories');
 
 const authRoutes = require('./authentication');
 const writeRoutes = require('./write');
@@ -25,22 +26,23 @@ const _mounts = {
 };
 
 _mounts.main = (app, middleware, controllers) => {
-	const loginRegisterMiddleware = [middleware.redirectToAccountIfLoggedIn];
+    const loginRegisterMiddleware = [middleware.redirectToAccountIfLoggedIn];
 
-	setupPageRoute(app, '/login', loginRegisterMiddleware, controllers.login);
-	setupPageRoute(app, '/register', loginRegisterMiddleware, controllers.register);
-	setupPageRoute(app, '/register/complete', [], controllers.registerInterstitial);
-	setupPageRoute(app, '/compose', [], controllers.composer.get);
-	setupPageRoute(app, '/confirm/:code', [], controllers.confirmEmail);
-	setupPageRoute(app, '/outgoing', [], controllers.outgoing);
-	setupPageRoute(app, '/search', [], controllers.search.search);
-	setupPageRoute(app, '/reset/:code?', [middleware.delayLoading], controllers.reset);
-	setupPageRoute(app, '/tos', [], controllers.termsOfUse);
+    setupPageRoute(app, '/login', loginRegisterMiddleware, controllers.login);
+    setupPageRoute(app, '/register', loginRegisterMiddleware, controllers.register);
+    setupPageRoute(app, '/register/complete', [], controllers.registerInterstitial);
+    setupPageRoute(app, '/compose', [], controllers.composer.get);
+    setupPageRoute(app, '/confirm/:code', [], controllers.confirmEmail);
+    setupPageRoute(app, '/outgoing', [], controllers.outgoing);
+    setupPageRoute(app, '/search', [], controllers.search.search);
+    setupPageRoute(app, '/reset/:code?', [middleware.delayLoading], controllers.reset);
+    setupPageRoute(app, '/tos', [], controllers.termsOfUse);
 
-	setupPageRoute(app, '/email/unsubscribe/:token', [], controllers.accounts.settings.unsubscribe);
-	app.post('/email/unsubscribe/:token', controllers.accounts.settings.unsubscribePost);
+    setupPageRoute(app, '/email/unsubscribe/:token', [], controllers.accounts.settings.unsubscribe);
+    app.post('/email/unsubscribe/:token', controllers.accounts.settings.unsubscribePost);
 
-	app.post('/compose', middleware.applyCSRF, controllers.composer.post);
+    app.post('/compose', middleware.applyCSRF, controllers.composer.post);
+	app.get('/anonymous-category', categoriesController.renderAnonymousCategory);
 };
 
 _mounts.mod = (app, middleware, controllers) => {
