@@ -8,6 +8,7 @@ const meta = require('../meta');
 const pagination = require('../pagination');
 const helpers = require('./helpers');
 const privileges = require('../privileges');
+const anonymousPosts = require('../anonymousPosts');
 
 const categoriesController = module.exports;
 
@@ -62,3 +63,21 @@ categoriesController.list = async function (req, res) {
 
 	res.render('categories', data);
 };
+
+categoriesController.renderAnonymousCategory = async function (req, res) {
+    try {
+        const posts = await anonymousPosts.getAnonymousPosts(); // Use the imported function
+        console.log('Rendering anonymous category page with posts:', posts);
+        res.render('anonymous-category', {
+            title: 'Anonymous Category',
+            template: 'anonymous-category',
+            url: req.originalUrl,
+            posts: posts
+        });
+    } catch (err) {
+        console.error('Error rendering anonymous category:', err);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+module.exports = categoriesController;
