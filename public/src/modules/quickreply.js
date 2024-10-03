@@ -27,7 +27,7 @@ define('quickreply', [
 			destroyAutoComplete();
 		});
 		$(window).trigger('composer:autocomplete:init', data);
-		// autocomplete._active.core_qr = autocomplete.setup(data);
+		autocomplete._active.core_qr = autocomplete.setup(data);
 
 		mousetrap.bind('ctrl+return', (e) => {
 			if (e.target === element.get(0)) {
