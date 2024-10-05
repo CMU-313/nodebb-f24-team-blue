@@ -70,6 +70,13 @@ Categories.searchTopics = async (req, res) => {
 	helpers.formatApiResponse(200, res, result);
 };
 
+Categories.anonymousTopics = async (req, res) => {
+	const { cid } = req.params;
+	const result = await api.categories.anonymousTopics(req, { ...req.query, cid });
+
+	helpers.formatApiResponse(200, res, result);
+};
+
 Categories.setWatchState = async (req, res) => {
 	const { cid } = req.params;
 	let { uid, state } = req.body;

@@ -179,6 +179,26 @@ categoriesAPI.searchTopics = async (caller, data) => {
 	};
 };
 
+categoriesAPI.anonymousTopics = async (caller, data) => {
+	const { cid } = data;
+	const { uid } = caller;
+	if (!cid) {
+		throw new Error('[[error:invalid-category]]');
+	}
+
+	const topicsData = {
+		cid,
+		uid,
+	};
+
+	const anonymousResults = await categories.anonymousTopics(topicsData);
+
+	return {
+		topics: anonymousResults.topics,
+		nextStart: anonymousResults.nextStart,
+	};
+};
+
 categoriesAPI.setWatchState = async (caller, { cid, state, uid }) => {
 	let targetUid = caller.uid;
 	const cids = Array.isArray(cid) ? cid.map(cid => parseInt(cid, 10)) : [parseInt(cid, 10)];

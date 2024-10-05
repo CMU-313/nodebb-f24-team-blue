@@ -45,6 +45,9 @@ define('forum/category', [
 		// Handler for searching topics (listens for submission of the search bar)
 		handleSearchTopics();
 
+		// Handler for anonymous topic (listens for a checkbox)
+		handleAnonymousCheckbox();
+
 		categorySelector.init($('[component="category-selector"]'), {
 			privilege: 'find',
 			parentCid: ajaxify.data.cid,
@@ -170,6 +173,58 @@ define('forum/category', [
 				}
 			}
 		});
+	}
+
+	function handleAnonymousCheckbox() {
+		const $checkbox = $('[component="category/controls"] .form-check-input');
+
+		$checkbox.on('change', async function() {
+			// Check if the checkbox is checked or unchecked
+			const isChecked = $(this).is(':checked');
+
+			if (isChecked) {
+				handleAnonymousTopics();
+			} else {
+				handleOriginalTopics();
+			}
+		});
+	}
+
+	async function handleOriginalTopics() {
+		const cid = ajaxify.data.cid;
+
+		try {
+			const { topics: data } = await api.get(`/categories/${cid}/topics`);
+
+			app.parseAndTranslate('partials/topics_list', { topics: data }, function (html) {
+				html.find('.timeago').timeago();
+				const topicContainer = $('[component="category"]');
+				topicContainer.html(html);
+			});
+		} catch (error) {
+			console.error('Error fetching topics: ', error);
+		}
+	}
+
+	async function handleAnonymousTopics() {
+		const cid = ajaxify.data.cid;
+
+		try {
+			const { topics: data } = await api.get(`/categories/${cid}/anonymousTopics`);
+
+			if (!data.length) {
+				$('[component="category"]').html('<li>No anonymous topics found in this category.</li>');
+				return;
+			}
+
+			app.parseAndTranslate('partials/topics_list', { topics: data }, function (html) {
+				html.find('.timeago').timeago();
+				const topicContainer = $('[component="category"]');
+				topicContainer.html(html);
+			});
+		} catch (error) {
+			console.error('Error fetching anonymous topics: ', error);
+		}
 	}
 
 	return Category;

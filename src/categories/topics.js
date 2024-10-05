@@ -66,6 +66,38 @@ module.exports = function (Categories) {
 		return { topics: searchResults.topics };
 	};
 
+	Categories.anonymousTopics = async function (data) {
+		const { cid, uid } = data;
+
+		let anonymousResults = await plugins.hooks.fire('filter:category.topics.prepare', data);
+
+		const anonymousTids = [];
+
+		// Get all keys that match the topic:* pattern
+		const keys = await db.scan({ match: 'topic:*' });
+
+		for (const key of keys) {
+			try {
+				// eslint-disable-next-line no-await-in-loop
+				const topicObject = await db.getObject(key);
+				const { anonymous, cid: topicCid, tid } = topicObject;
+				// Check if the topic is anonymous and if the category ID matches
+				if (anonymous === "true" && topicCid && topicCid === cid) {
+					anonymousTids.push(tid);
+				}
+			} catch (error) {
+				console.log(`Error fetching data`);
+			}
+		}
+
+		let topicsData = await topics.getTopicsByTids(anonymousTids, uid);
+		topicsData = await user.blocks.filter(data.uid, topicsData);
+
+		anonymousResults = await plugins.hooks.fire('filter:category.topics.get', { cid: data.cid, topics: topicsData, uid: data.uid });
+
+		return { topics: anonymousResults.topics };
+	};
+
 	Categories.getTopicIds = async function (data) {
 		const [pinnedTids, set] = await Promise.all([
 			Categories.getPinnedTids({ ...data, start: 0, stop: -1 }),
