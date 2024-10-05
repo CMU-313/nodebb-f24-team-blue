@@ -116,13 +116,14 @@ module.exports = function (Topics) {
 		if (!data.fromQueue) {
 			await user.isReadyToPost(uid, data.cid);
 		}
-
+	
 		const tid = await Topics.create(data);
 
 		let postData = data;
 		postData.tid = tid;
 		postData.ip = data.req ? data.req.ip : null;
 		postData.isMain = true;
+		postData.anonymous = data.anonymous || false; // Including anonymous field in post data
 		postData = await posts.create(postData);
 		postData = await onNewPost(postData, data);
 
