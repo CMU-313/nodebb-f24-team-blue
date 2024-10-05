@@ -68,15 +68,16 @@ module.exports = function (Topics) {
 			post.timestampISO = utils.toISOString(post.timestamp);
 			tidToPost[post.tid] = post;
 
-			// add anonyous user to topic
+			// add anonymous user to topic
 			if (post.user.uid === -1) {
-                post.user = {
-                    username: "Anonymous",
-                    userslug: "Anonymous",
-                    uid: -1,
-                    displayname: "Anonymous",
-                };
-            }
+				post.user = structuredClone(post.user);
+				post.user.username = 'Anonymous';
+				post.user.userslug = 'Anonymous';
+				post.user.uid = -1;
+				post.user.displayname = 'Anonymous';
+				post.user['icon:text'] = '*';
+				post.user['icon:bgColor'] = '#aaaaaa';
+			}
 		});
 		await Promise.all(postData.map(p => posts.parsePost(p)));
 
