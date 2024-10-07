@@ -1,0 +1,46 @@
+get:
+  tags:
+    - categories
+  summary: search topics
+  description: |
+    This operation searches for topics in the requested category based on the search term provided.
+
+  parameters:
+    - in: path
+      name: cid
+      schema:
+        type: string
+      required: true
+      description: A valid category id, `0` for global privileges, `admin` for admin privileges
+      example: 1
+    - in: query
+      name: 'uid'
+      schema:
+        type: string
+      required: true
+      description: The user id performing the search
+      example: '1'
+    - in: query
+      name: 'searchTerm'
+      schema:
+        type: string
+      required: true
+      description: The term to search for within the topics
+      example: 'Test'
+  responses:
+    '200':
+      description: categories topics on search term successfully retrieved
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                $ref: ../../../components/schemas/Status.yaml#/Status
+              response:
+                type: object
+                properties:
+                  topics:
+                    type: array
+                    items:
+                      $ref: ../../../components/schemas/TopicObject.yaml#/TopicObject

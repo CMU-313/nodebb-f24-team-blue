@@ -49,7 +49,7 @@ module.exports = function (Categories) {
 						searchTids.push(tid);
 					}
 				} catch (error) {
-					console.log(`Error fetching data`);
+					console.log(`Error fetching data for search term: ${searchTerm} in category: ${cid}`);
 				}
 			}
 		}
