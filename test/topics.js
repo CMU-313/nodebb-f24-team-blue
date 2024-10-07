@@ -7,7 +7,8 @@ const mockdate = require('mockdate');
 const nconf = require('nconf');
 const util = require('util');
 const Redis = require('ioredis');
-const redis = new Redis(); 
+
+const redis = new Redis();
 
 
 const sleep = util.promisify(setTimeout);
@@ -87,10 +88,10 @@ describe('Topic\'s', () => {
 				title: topic.title,
 				content: topic.content,
 				cid: topic.categoryId,
-				anonymous: true, 
+				anonymous: true,
 			}, (err, result) => {
 				assert.ifError(err);
-				assert(result)
+				assert(result);
 				assert.strictEqual(result.topicData.anonymous, 'true');
 				done();
 			});
@@ -102,10 +103,10 @@ describe('Topic\'s', () => {
 				title: topic.title,
 				content: topic.content,
 				cid: topic.categoryId,
-				anonymous: false, 
+				anonymous: false,
 			}, (err, result) => {
 				assert.ifError(err);
-				assert(result)
+				assert(result);
 				assert.strictEqual(result.topicData.anonymous, 'false');
 				done();
 			});
@@ -488,9 +489,9 @@ describe('Topic\'s', () => {
 					cid: categoryObj.cid,
 					title: 'Anonymous Topic Title',
 					content: 'Anonymous Topic Content',
-					anonymous: true, 
+					anonymous: true,
 				});
-				
+
 				// Save anonymous topic to Redis using the topic ID as the key
 				const topicKey = `topic:${anonymousTopic.topicData.tid}`;
 				// Delete the key if it already exists
@@ -514,7 +515,7 @@ describe('Topic\'s', () => {
 
 			it('should get anonymous topics from the category', async () => {
 				const uid = adminUid;
-				const cid = categoryObj.cid; 
+				const { cid } = categoryObj;
 				const response = await apiCategories.anonymousTopics({ uid }, { cid });
 
 				assert(response.topics);
@@ -526,7 +527,6 @@ describe('Topic\'s', () => {
 					assert.strictEqual(topic.anonymous, 'true');
 					assert.strictEqual(topic.cid, cid);
 				});
-
 			});
 			after(async () => {
 				const topicKey = `topic:${anonymousTopic.topicData.tid}`;
