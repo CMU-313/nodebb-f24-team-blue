@@ -269,31 +269,6 @@ Emailer.send = async (template, uid, params) => {
 
 Emailer.sendToEmail = async (template, email, language, params) => {
     const lang = language || meta.config.defaultLang || 'en-GB';
-    const unsubscribable = ['digest', 'notification'];
-
-    // Digests and notifications can be one-click unsubbed
-    let payload = {
-        template: template,
-        uid: params.uid,
-    };
-
-    if (unsubscribable.includes(template)) {
-        if (template === 'notification') {
-            payload.type = params.notification.type;
-        }
-        payload = jwt.sign(payload, nconf.get('secret'), {
-            expiresIn: '30d',
-        });
-
-        const unsubUrl = [nconf.get('url'), 'email', 'unsubscribe', payload].join('/');
-        params.headers = {
-            'List-Id': `<${[template, params.uid, getHostname()].join('.')}>`,
-            'List-Unsubscribe': `<${unsubUrl}>`,
-            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-            ...params.headers,
-        };
-        params.unsubUrl = unsubUrl;
-    }
 
     const result = await Plugins.hooks.fire('filter:email.params', {
         template: template,
@@ -318,7 +293,6 @@ Emailer.sendToEmail = async (template, email, language, params) => {
         <p><strong>Reply content:</strong></p>
         <p>${params.notification.content}</p>
         <p>To view the reply, visit: <a href="${nconf.get('url')}/topic/${params.notification.topicSlug}">${nconf.get('url')}/topic/${params.notification.topicSlug}</a></p>
-        <p>If you wish to unsubscribe, click here: <a href="${params.unsubUrl}">${params.unsubUrl}</a></p>
     `;
 
     // Construct the plain text version as well
@@ -330,8 +304,6 @@ Emailer.sendToEmail = async (template, email, language, params) => {
         Reply content: ${params.notification.content}
 
         To view the reply, visit: ${nconf.get('url')}/topic/${params.notification.topicSlug}
-
-        If you wish to unsubscribe, click here: ${params.unsubUrl}
     `;
 
     // Send the email with both HTML and plain text content
@@ -348,6 +320,7 @@ Emailer.sendToEmail = async (template, email, language, params) => {
 
     await Emailer.fallbackTransport.sendMail(data);
 };
+
 
 
 
