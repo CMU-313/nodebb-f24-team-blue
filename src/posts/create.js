@@ -54,7 +54,7 @@ module.exports = function (Posts) {
         const topicData = await topics.getTopicFields(tid, ['cid', 'pinned', 'uid', 'title']);  // Fetch the topic creator's uid and title
         postData.cid = topicData.cid;
 
-        const email = await user.getUserField(topicData.uid, 'email');
+        const email = await user.getUserField(topicData.uid, 'email'); // Fetch the email
         const username = await user.getUserField(topicData.uid, 'username'); // Fetch the username
         
         // Send an email notification to the topic creator if it's a reply

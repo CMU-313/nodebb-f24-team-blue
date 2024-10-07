@@ -5,12 +5,15 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
+
 const db = require('./mocks/databasemock');
 const Plugins = require('../src/plugins');
 const Emailer = require('../src/emailer');
 const user = require('../src/user');
 const meta = require('../src/meta');
 const Meta = require('../src/meta');
+const nconf = require('nconf');
+
 
 describe('emailer', () => {
 	let onMail = function (address, session, callback) { callback(); };
@@ -196,5 +199,54 @@ describe('emailer', () => {
 
 			Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
 		});
+
+		it('should send notification email with correct content', (done) => {
+			const email = 'test@example.org';
+			const language = 'en-GB';
+			const params = {
+				subject: 'New Reply in Topic',
+				username: 'TestUser',
+				notification: {
+					title: 'Test Topic',
+					content: 'This is a test reply.',
+					topicSlug: 'test-topic',
+				},
+			};
+	
+			const method = function (data, next) {
+				try {
+					assert(data);
+					assert.equal(data.to, email);
+					assert.equal(data.subject, `[NodeBB] ${params.subject}`);
+					assert(data.html.includes(`Hello ${params.username},`));
+					assert(data.html.includes(`You have received a new reply in the topic "<strong>${params.notification.title}</strong>".`));
+					assert(data.html.includes(`<p>${params.notification.content}</p>`));
+					assert(data.html.includes(`href="${nconf.get('url')}/topic/${params.notification.topicSlug}"`));
+	
+					next();
+					Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
+					done();
+				} catch (err) {
+					Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
+					done(err);
+				}
+			};
+	
+			Plugins.hooks.register('emailer-test', {
+				hook: 'static:email.send',
+				method,
+			});
+	
+			Emailer.sendNotificationEmail('notification', email, language, params)
+				.catch((err) => {
+					Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
+					done(err);
+				});
+		});
+		
 	});
+
 });
+	
+
+
