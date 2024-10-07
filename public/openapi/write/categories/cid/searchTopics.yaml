@@ -44,10 +44,3 @@ get:
                     type: array
                     items:
                       $ref: ../../../components/schemas/TopicObject.yaml#/TopicObject
-                  nextStart:
-                    type: number
-                  privileges:
-                    type: object
-                    additionalProperties:
-                      type: boolean
-                      description: A set of privileges with either true or false
