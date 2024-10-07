@@ -54,33 +54,31 @@ module.exports = function (Posts) {
         const topicData = await topics.getTopicFields(tid, ['cid', 'pinned', 'uid', 'title']);  // Fetch the topic creator's uid and title
         postData.cid = topicData.cid;
 
-        // Fetch the topic creator's email
         const email = await user.getUserField(topicData.uid, 'email');
-        console.log('Topic Creator Email:', email);  // Check if email is fetched correctly
-
-
+        const username = await user.getUserField(topicData.uid, 'username'); // Fetch the username
+        
         // Send an email notification to the topic creator if it's a reply
-        if (tid && topicData.uid && uid !== topicData.uid) {  
+        if (tid && topicData.uid && uid !== topicData.uid) {
             const emailParams = {
                 subject: `New reply to your topic: "${topicData.title}"`,
                 notification: {
                     type: 'reply',
-                    content: postData.content,  // This is the dynamic reply content
+                    content: postData.content,  // Dynamic reply content
                     title: topicData.title,  // Dynamic topic title
                     pid: postData.pid,  // Post ID
                     topicSlug: topicData.title.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-'),  // Topic slug
                 },
+                username: username,  // Pass the username here
             };
-                       
-
+        
             // Send the email
             try {
-                await emailer.send('notification', topicData.uid, emailParams);
-                console.log(`Email sent to topic owner (uid: ${topicData.uid}) for reply in topic "${topicData.title}".`);
+                await emailer.sendNotificationEmail('notification', email, 'en-GB', emailParams);  // Adjust language if needed
+                console.log(`Notification email sent to topic owner (uid: ${topicData.uid}) for reply in topic "${topicData.title}".`);
             } catch (err) {
-                console.error(`Failed to send email for reply to topic "${topicData.title}":`, err);
+                console.error(`Failed to send notification email for reply to topic "${topicData.title}":`, err);
             }
-        }
+        }        
 
         return result.post;
     };
