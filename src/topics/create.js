@@ -117,7 +117,7 @@ module.exports = function (Topics) {
 		if (!data.fromQueue) {
 			await user.isReadyToPost(uid, data.cid);
 		}
-	
+
 		const tid = await Topics.create(data);
 
 		let postData = data;

@@ -1,0 +1,40 @@
+get:
+  tags:
+    - categories
+  summary: get anonymous topics
+  description: |
+    This operation returns a set of anonymous topics in the requested category.
+
+    The number of topics returned is defined by the "Topics per Page" (`topicsPerPage`) setting under ACP > Settings > Pagination.
+  parameters:
+    - in: path
+      name: cid
+      schema:
+        type: string
+      required: true
+      description: a valid category id, `0` for global privileges, `admin` for admin privileges
+      example: 1
+  responses:
+    '200':
+      description: anonymous topics successfully retrieved
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                $ref: ../../../components/schemas/Status.yaml#/Status
+              response:
+                type: object
+                properties:
+                  topics:
+                    type: array
+                    items:
+                      $ref: ../../../components/schemas/TopicObject.yaml#/TopicObject
+                  nextStart:
+                    type: number
+                  privileges:
+                    type: object
+                    additionalProperties:
+                      type: boolean
+                      description: A set of privileges with either true or false

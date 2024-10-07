@@ -178,7 +178,7 @@ define('forum/category', [
 	function handleAnonymousCheckbox() {
 		const $checkbox = $('[component="category/controls"] .form-check-input');
 
-		$checkbox.on('change', async function() {
+		$checkbox.on('change', async function () {
 			// Check if the checkbox is checked or unchecked
 			const isChecked = $(this).is(':checked');
 
