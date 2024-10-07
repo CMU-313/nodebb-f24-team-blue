@@ -21,6 +21,7 @@ module.exports = function () {
 	setupApiRoute(router, 'get', '/:cid/children', [middleware.assert.category], controllers.write.categories.getChildren);
 	setupApiRoute(router, 'get', '/:cid/topics', [middleware.assert.category], controllers.write.categories.getTopics);
 	setupApiRoute(router, 'get', '/:cid/searchTopics', [middleware.assert.category], controllers.write.categories.searchTopics);
+	setupApiRoute(router, 'get', '/:cid/anonymousTopics', [middleware.assert.category], controllers.write.categories.anonymousTopics);
 
 	setupApiRoute(router, 'put', '/:cid/watch', [...middlewares, middleware.assert.category], controllers.write.categories.setWatchState);
 	setupApiRoute(router, 'delete', '/:cid/watch', [...middlewares, middleware.assert.category], controllers.write.categories.setWatchState);

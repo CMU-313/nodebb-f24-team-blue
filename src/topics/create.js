@@ -24,7 +24,7 @@ module.exports = function (Topics) {
 
 		let topicData = {
 			tid: tid,
-			uid: data.uid,
+			uid: data.anonymous ? -1 : data.uid, // If anonymous, set uid to -1
 			cid: data.cid,
 			mainPid: 0,
 			title: data.title,
@@ -33,6 +33,7 @@ module.exports = function (Topics) {
 			lastposttime: 0,
 			postcount: 0,
 			viewcount: 0,
+			anonymous: data.anonymous,
 		};
 
 		if (Array.isArray(data.tags) && data.tags.length) {
