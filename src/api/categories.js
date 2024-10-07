@@ -175,7 +175,6 @@ categoriesAPI.searchTopics = async (caller, data) => {
 
 	return {
 		topics: searchResults.topics,
-		nextStart: searchResults.nextStart,
 	};
 };
 
