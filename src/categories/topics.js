@@ -82,7 +82,7 @@ module.exports = function (Categories) {
 				const topicObject = await db.getObject(key);
 				const { anonymous, cid: topicCid, tid } = topicObject;
 				// Check if the topic is anonymous and if the category ID matches
-				if (anonymous === 'true' && topicCid && topicCid === cid) {
+				if (anonymous && anonymous === 'true' && topicCid && topicCid === cid.toString()) {
 					anonymousTids.push(tid);
 				}
 			} catch (error) {
