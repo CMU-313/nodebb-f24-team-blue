@@ -45,7 +45,8 @@ module.exports = function (Categories) {
 					const topicObject = await db.getObject(key);
 					const { title, cid: topicCid, tid } = topicObject;
 					// Check if the title includes the search term and if the category ID matches
-					if (title && title.toLowerCase().includes(searchTerm.toLowerCase()) && topicCid && topicCid === cid) {
+					if (title && title.toLowerCase().includes(searchTerm.toLowerCase()) && topicCid &&
+						topicCid === cid.toString()) {
 						searchTids.push(tid);
 					}
 				} catch (error) {
