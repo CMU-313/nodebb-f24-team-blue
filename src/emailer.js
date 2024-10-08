@@ -268,146 +268,140 @@ Emailer.send = async (template, uid, params) => {
 };
 
 Emailer.sendToEmail = async (template, email, language, params) => {
-    const lang = language || meta.config.defaultLang || 'en-GB';
+	const lang = language || meta.config.defaultLang || 'en-GB';
 
-    // Check if email is defined
-    if (!email) {
-        throw new Error('No recipient email address defined');
-    }
+	// Check if email is defined
+	if (!email) {
+		throw new Error('No recipient email address defined');
+	}
 
-    const unsubscribable = ['digest', 'notification'];
+	const unsubscribable = ['digest', 'notification'];
 
-    let payload = {
-        template: template,
-        uid: params.uid,
-    };
+	let payload = {
+		template: template,
+		uid: params.uid,
+	};
 
-    if (unsubscribable.includes(template)) {
-        if (template === 'notification') {
-            payload.type = params.notification.type;
-        }
-        payload = jwt.sign(payload, nconf.get('secret'), {
-            expiresIn: '30d',
-        });
+	if (unsubscribable.includes(template)) {
+		if (template === 'notification') {
+			payload.type = params.notification.type;
+		}
+		payload = jwt.sign(payload, nconf.get('secret'), {
+			expiresIn: '30d',
+		});
 
-        const unsubUrl = [nconf.get('url'), 'email', 'unsubscribe', payload].join('/');
-        params.headers = {
-            'List-Id': `<${[template, params.uid, getHostname()].join('.')}>`,
-            'List-Unsubscribe': `<${unsubUrl}>`,
-            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-            ...params.headers,
-        };
-        params.unsubUrl = unsubUrl;
-    }
+		const unsubUrl = [nconf.get('url'), 'email', 'unsubscribe', payload].join('/');
+		params.headers = {
+			'List-Id': `<${[template, params.uid, getHostname()].join('.')}>`,
+			'List-Unsubscribe': `<${unsubUrl}>`,
+			'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+			...params.headers,
+		};
+		params.unsubUrl = unsubUrl;
+	}
 
-    const result = await Plugins.hooks.fire('filter:email.params', {
-        template: template,
-        email: email,
-        language: lang,
-        params: params,
-    });
+	const result = await Plugins.hooks.fire('filter:email.params', {
+		template: template,
+		email: email,
+		language: lang,
+		params: params,
+	});
 
-    template = result.template;
-    email = result.email;
-    params = result.params;
+	template = result.template;
+	email = result.email;
+	params = result.params;
 
-    const [html, subject] = await Promise.all([
-        Emailer.renderAndTranslate(template, params, result.language),
-        translator.translate(params.subject, result.language),
-    ]);
+	const [html, subject] = await Promise.all([
+		Emailer.renderAndTranslate(template, params, result.language),
+		translator.translate(params.subject, result.language),
+	]);
 
-    const data = await Plugins.hooks.fire('filter:email.modify', {
-        _raw: params,
-        to: email,  // Ensure email is passed here
-        from: meta.config['email:from'] || `no-reply@${getHostname()}`,
-        from_name: meta.config['email:from_name'] || 'NodeBB',
-        subject: `[${meta.config.title}] ${_.unescape(subject)}`,
-        html: html,
-        plaintext: htmlToText(html, {
-            tags: { img: { format: 'skip' } },
-        }),
-        template: template,
-        uid: params.uid,
-        pid: params.pid,
-        fromUid: params.fromUid,
-        headers: params.headers,
-        rtl: params.rtl,
-    });
+	const data = await Plugins.hooks.fire('filter:email.modify', {
+		_raw: params,
+		to: email, // Ensure email is passed here
+		from: meta.config['email:from'] || `no-reply@${getHostname()}`,
+		from_name: meta.config['email:from_name'] || 'NodeBB',
+		subject: `[${meta.config.title}] ${_.unescape(subject)}`,
+		html: html,
+		plaintext: htmlToText(html, {
+			tags: { img: { format: 'skip' } },
+		}),
+		template: template,
+		uid: params.uid,
+		pid: params.pid,
+		fromUid: params.fromUid,
+		headers: params.headers,
+		rtl: params.rtl,
+	});
 
-    try {
-        if (Plugins.hooks.hasListeners('filter:email.send')) {
-            await Plugins.hooks.fire('filter:email.send', data);
-        } else if (Plugins.hooks.hasListeners('static:email.send')) {
-            await Plugins.hooks.fire('static:email.send', data);
-        } else {
-            await Emailer.sendViaFallback(data);
-        }
-    } catch (err) {
-        throw err;
-    }
+	if (Plugins.hooks.hasListeners('filter:email.send')) {
+		await Plugins.hooks.fire('filter:email.send', data);
+	} else if (Plugins.hooks.hasListeners('static:email.send')) {
+		await Plugins.hooks.fire('static:email.send', data);
+	} else {
+		await Emailer.sendViaFallback(data);
+	}
 };
 
+// AI Assistance: This function was partially generated with GitHub Copilot to streamline the
+// process of sending notification emails, including handling dynamic content and email formatting.
 Emailer.sendNotificationEmail = async (template, email, language, params) => {
-    const lang = language || meta.config.defaultLang || 'en-GB';
+	const lang = language || meta.config.defaultLang || 'en-GB';
 
-    // Check if email is defined
-    if (!email) {
-        throw new Error('No recipient email address defined');
-    }
+	// Check if email is defined
+	if (!email) {
+		throw new Error('No recipient email address defined');
+	}
 
-    const result = await Plugins.hooks.fire('filter:email.params', {
-        template: template,
-        email: email,
-        language: lang,
-        params: params,
-    });
+	const result = await Plugins.hooks.fire('filter:email.params', {
+		template: template,
+		email: email,
+		language: lang,
+		params: params,
+	});
 
-    template = result.template;
-    email = result.email;
-    params = result.params;
+	template = result.template;
+	email = result.email;
+	params = result.params;
 
-    // HTML version with dynamic content
-    const html = `
+	// HTML version with dynamic content
+	const html = `
         <p>Hello ${params.username},</p>
-        <p>You have received a new reply in the topic "<strong>${params.notification?.title || 'Untitled Topic'}</strong>".</p>
+        <p>You have received a new reply in the topic "<strong>${(params.notification && params.notification.title) || 'Untitled Topic'}</strong>".</p>
         <p><strong>Reply content:</strong></p>
-        <p>${params.notification?.content || 'No content available'}</p>
-        <p>To view the reply, visit: <a href="${nconf.get('url')}/topic/${params.notification?.topicSlug || ''}">${nconf.get('url')}/topic/${params.notification?.topicSlug || 'home'}</a></p>
-    `;
+        <p>${(params.notification && params.notification.content) || 'No content available'}</p>
+		<p>To view the reply, visit: <a href="${nconf.get('url')}/topic/${(params.notification && params.notification.topicSlug) || ''}">${nconf.get('url')}/topic/${(params.notification && params.notification.topicSlug) || 'home'}</a></p>
+		`;
 
-    // Construct the plain text version as well
-    const text = `
+	// Construct the plain text version as well
+	const text = `
         Hello ${params.username},
 
-        You have received a new reply in the topic "${params.notification?.title || 'Untitled Topic'}".
+        You have received a new reply in the topic "${(params.notification && params.notification.title) || 'Untitled Topic'}".
 
-        Reply content: ${params.notification?.content || 'No content available'}
+        Reply content: ${(params.notification && params.notification.content) || 'No content available'}
 
-        To view the reply, visit: ${nconf.get('url')}/topic/${params.notification?.topicSlug || 'home'}
-    `;
+		To view the reply, visit: ${nconf.get('url')}/topic/${(params.notification && params.notification.topicSlug) || 'home'}
+	`;
 
-    const data = await Plugins.hooks.fire('filter:email.modify', {
-        _raw: params,
-        to: email,
-        from: meta.config['email:from'] || `no-reply@${getHostname()}`,
-        from_name: meta.config['email:from_name'] || 'NodeBB',
-        subject: `[${meta.config.title}] ${_.unescape(params.subject)}`,
-        html: html,  // Ensure HTML version includes dynamic content
-        text: text,  // Ensure plain-text version includes dynamic content
-        headers: params.headers,
-    });
+	const data = await Plugins.hooks.fire('filter:email.modify', {
+		_raw: params,
+		to: email,
+		from: meta.config['email:from'] || `no-reply@${getHostname()}`,
+		from_name: meta.config['email:from_name'] || 'NodeBB',
+		subject: `[${meta.config.title}] ${_.unescape(params.subject)}`,
+		html: html, // Ensure HTML version includes dynamic content
+		text: text, // Ensure plain-text version includes dynamic content
+		headers: params.headers,
+	});
 
-    try {
-        if (Plugins.hooks.hasListeners('filter:email.send')) {
-            await Plugins.hooks.fire('filter:email.send', data);
-        } else if (Plugins.hooks.hasListeners('static:email.send')) {
-            await Plugins.hooks.fire('static:email.send', data);
-        } else {
-            await Emailer.sendViaFallback(data);
-        }
-    } catch (err) {
-        throw err;
-    }
+	if (Plugins.hooks.hasListeners('filter:email.send')) {
+		await Plugins.hooks.fire('filter:email.send', data);
+	} else if (Plugins.hooks.hasListeners('static:email.send')) {
+		await Plugins.hooks.fire('static:email.send', data);
+	} else {
+		await Emailer.sendViaFallback(data);
+	}
 };
 
 

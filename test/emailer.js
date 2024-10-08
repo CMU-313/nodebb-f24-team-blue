@@ -4,6 +4,7 @@ const { SMTPServer } = require('smtp-server');
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const nconf = require('nconf');
 
 
 const db = require('./mocks/databasemock');
@@ -12,7 +13,6 @@ const Emailer = require('../src/emailer');
 const user = require('../src/user');
 const meta = require('../src/meta');
 const Meta = require('../src/meta');
-const nconf = require('nconf');
 
 
 describe('emailer', () => {
@@ -212,7 +212,7 @@ describe('emailer', () => {
 					topicSlug: 'test-topic',
 				},
 			};
-	
+
 			const method = function (data, next) {
 				try {
 					assert(data);
@@ -222,7 +222,7 @@ describe('emailer', () => {
 					assert(data.html.includes(`You have received a new reply in the topic "<strong>${params.notification.title}</strong>".`));
 					assert(data.html.includes(`<p>${params.notification.content}</p>`));
 					assert(data.html.includes(`href="${nconf.get('url')}/topic/${params.notification.topicSlug}"`));
-	
+
 					next();
 					Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
 					done();
@@ -231,22 +231,20 @@ describe('emailer', () => {
 					done(err);
 				}
 			};
-	
+
 			Plugins.hooks.register('emailer-test', {
 				hook: 'static:email.send',
 				method,
 			});
-	
+
 			Emailer.sendNotificationEmail('notification', email, language, params)
 				.catch((err) => {
 					Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
 					done(err);
 				});
 		});
-		
 	});
-
 });
-	
+
 
 
