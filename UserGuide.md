@@ -1,17 +1,39 @@
 # User Guide
 
-This document provides instructions for using the new features added to the system, along with steps for user testing and information about the automated tests implemented for each feature. Below is a detailed guide on how to use the the features that were implemented across both sprints.
+This document provides instructions for using the new features added to NodeBB, along with steps for user testing and information about the automated tests implemented for each feature. Below is a detailed guide on how to use the the features that were implemented across both sprints.
 
 ---
 
 ### Search Bar Feature
+
+#### Overview
+The search topics/bar feature allows users to create a search for any topics by its title in a given category.
+
+#### How to Use/Test
+
+1. **Searching for a topic**
+   - Click into any category to see its topic list. Right under the category name, there should be a search bar in the topic list bar
+   - Enter a search term into the search bar and press "Enter" to trigger a search. This will immediately replace all the topics with topics that      have the search term you entered.
+  
+#### Automated Tests
+
+The test for the search bar feature can be found in the `test/topics.js` file.
+
+- **Gets all topics that have the search term within its title**
+   - Creates a new test topic that has the word "search" in it and saves it to the Redis DB as hashet (this is necessary since the    
+     `searchTopics` API scans the  Redis DB for topics whose title have the search term in it)
+   - Calls the `searchTopics` API and verifies that the array of topics it returns all have the search term (in this case, "search") within it
+
+### Test Case Justification
+
+Since there is only one search bar, that means the user can only trigger this feature by entering a search term. While it is possible to create more unit tests for more search terms, the code/logic executed is more or less the same for any search term entered.
 
 ---
 
 ### Anonymous Posting Feature
 
 #### Overview
-The anonymous posting featue allows users to create a new topic/post anonymously by simply selecting a checkbox when creating the topic! Additionally, within a category, an user can select a checkbox in the topic bar to only show the anonymous posts for their convenience.
+The anonymous posting feature allows users to create a new topic/post anonymously by simply selecting a checkbox when creating the topic! Additionally, within a category, an user can select a checkbox in the topic bar to only show the anonymous posts for their convenience.
 
 #### How to Use/Test
 
@@ -42,11 +64,15 @@ The tests for the email notification feature can be found in the `test/topics.js
    - Confirms that the new topic is not anonymous by checking if `anonymous` in `topicData` is false
 
 - **Verifying that the selecting the "View Anonymous Post" checkbox only returns topics that are anonymous**
-   - Creates a new anonymous topic that is anonymous and saves to Redis as hashet (this is necessary since the `anonymousPosts` API scans the Redis DB 
-     for topics that are marked as anonymous)
-   - Calls the `anonymousPosts` API and asserts that it returns an array of of topics
+   - Creates a new anonymous topic that is anonymous and saves to Redis as hashet (this is necessary since the `anonymousTopics` API scans the    
+     Redis DB for topics that are marked as anonymous)
+   - Calls the `anonymousTopics` API and asserts that it returns an array of of topics
    - Loops through the array of topics and checks that each topic in that array is anonymous
    - Cleans up by deleting the anonymous topic that was created at the beginning from the Redis DB
+
+### Test Case Justification
+
+Because this functionality only covers making an anonymous topic and then rendering them, these three tests (creating a anonymous topic, create a topic that is not anonymous, and render anonymous topics) are enough. This is because these three scenarios represent all the ways that an user can interact with this feature.
 
 ---
 
