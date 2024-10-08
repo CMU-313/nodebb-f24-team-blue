@@ -31,7 +31,7 @@ module.exports = function (Posts) {
 		const pid = await db.incrObjectField('global', 'nextPid');
 		let postData = {
 			pid: pid,
-			uid: uid,
+			uid: data.anonymous ? 0 : uid, // If anonymous, set uid to 0 (guest uid)
 			tid: tid,
 			content: content,
 			timestamp: timestamp,
