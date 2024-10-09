@@ -32,7 +32,6 @@ const validSorts = [
 ];
 
 categoryController.get = async function (req, res, next) {
-	console.log('Abdulaziz');
 	const cid = req.params.category_id;
 
 	let currentPage = parseInt(req.query.page, 10) || 1;

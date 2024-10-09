@@ -1,20 +1,25 @@
 'use strict';
 
+const _ = require('lodash');
+
 const meta = require('../meta');
 const db = require('../database');
 const plugins = require('../plugins');
 const user = require('../user');
 const topics = require('../topics');
+const categories = require('../categories');
+const groups = require('../groups');
 const privileges = require('../privileges');
 const emailer = require('../emailer'); // Import emailer to send email notifications
 
 module.exports = function (Posts) {
 	Posts.create = async function (data) {
+		// This is an internal method, consider using Topics.reply instead
 		const { uid } = data;
 		const { tid } = data;
 		const content = data.content.toString();
 		const timestamp = data.timestamp || Date.now();
-		// Removed 'isMain' as it was assigned but never used
+		const isMain = data.isMain || false;
 
 		if (!uid && parseInt(uid, 10) !== 0) {
 			throw new Error('[[error:invalid-uid]]');
@@ -27,7 +32,7 @@ module.exports = function (Posts) {
 		const pid = await db.incrObjectField('global', 'nextPid');
 		let postData = {
 			pid: pid,
-			uid: uid,
+			uid: data.anonymous ? 0 : uid, // If anonymous, set uid to 0 (guest uid)
 			tid: tid,
 			content: content,
 			timestamp: timestamp,
@@ -43,7 +48,7 @@ module.exports = function (Posts) {
 			postData.handle = data.handle;
 		}
 
-		const result = await plugins.hooks.fire('filter:post.create', { post: postData, data: data });
+		let result = await plugins.hooks.fire('filter:post.create', { post: postData, data: data });
 		postData = result.post;
 		await db.setObject(`post:${postData.pid}`, postData);
 
@@ -78,8 +83,32 @@ module.exports = function (Posts) {
 			}
 		}
 
+		await Promise.all([
+			db.sortedSetAdd('posts:pid', timestamp, postData.pid),
+			db.incrObjectField('global', 'postCount'),
+			user.onNewPostMade(postData),
+			topics.onNewPostMade(postData),
+			categories.onNewPostMade(topicData.cid, topicData.pinned, postData),
+			groups.onNewPostMade(postData),
+			addReplyTo(postData, timestamp),
+			Posts.uploads.sync(postData.pid),
+		]);
+
+		result = await plugins.hooks.fire('filter:post.get', { post: postData, uid: data.uid });
+		result.post.isMain = isMain;
+		plugins.hooks.fire('action:post.save', { post: _.clone(result.post) });
 		return result.post;
 	};
+
+	async function addReplyTo(postData, timestamp) {
+		if (!postData.toPid) {
+			return;
+		}
+		await Promise.all([
+			db.sortedSetAdd(`pid:${postData.toPid}:replies`, timestamp, postData.pid),
+			db.incrObjectField(`post:${postData.toPid}`, 'replies'),
+		]);
+	}
 
 	async function checkToPid(toPid, uid) {
 		const [toPost, canViewToPid] = await Promise.all([
