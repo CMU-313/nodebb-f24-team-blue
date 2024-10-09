@@ -3,7 +3,7 @@
 const express = require('express');
 const uploadsController = require('../controllers/uploads');
 const helpers = require('./helpers');
-const categoriesController = require('../controllers/categories');  // Add the categories controller
+const categoriesController = require('../controllers/categories'); // Add the categories controller
 
 module.exports = function (app, middleware, controllers) {
 	const middlewares = [middleware.autoLocale, middleware.authenticateRequest];
@@ -43,6 +43,5 @@ module.exports = function (app, middleware, controllers) {
 		middleware.checkAccountPermissions,
 	], helpers.tryRoute(controllers.accounts.edit.uploadPicture));
 
-	// Add the new POST route for creating an anonymous post
 	router.post('/post/anonymous', [...middlewares, middleware.applyCSRF], helpers.tryRoute(categoriesController.handleAnonymousPost));
 };

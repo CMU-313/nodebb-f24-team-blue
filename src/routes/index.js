@@ -26,32 +26,32 @@ const _mounts = {
 };
 
 _mounts.main = (app, middleware, controllers) => {
-    const loginRegisterMiddleware = [middleware.redirectToAccountIfLoggedIn];
+	const loginRegisterMiddleware = [middleware.redirectToAccountIfLoggedIn];
 
-    setupPageRoute(app, '/login', loginRegisterMiddleware, controllers.login);
-    setupPageRoute(app, '/register', loginRegisterMiddleware, controllers.register);
-    setupPageRoute(app, '/register/complete', [], controllers.registerInterstitial);
-    setupPageRoute(app, '/compose', [], controllers.composer.get);
-    setupPageRoute(app, '/confirm/:code', [], controllers.confirmEmail);
-    setupPageRoute(app, '/outgoing', [], controllers.outgoing);
-    setupPageRoute(app, '/search', [], controllers.search.search);
-    setupPageRoute(app, '/reset/:code?', [middleware.delayLoading], controllers.reset);
-    setupPageRoute(app, '/tos', [], controllers.termsOfUse);
+	setupPageRoute(app, '/login', loginRegisterMiddleware, controllers.login);
+	setupPageRoute(app, '/register', loginRegisterMiddleware, controllers.register);
+	setupPageRoute(app, '/register/complete', [], controllers.registerInterstitial);
+	setupPageRoute(app, '/compose', [], controllers.composer.get);
+	setupPageRoute(app, '/confirm/:code', [], controllers.confirmEmail);
+	setupPageRoute(app, '/outgoing', [], controllers.outgoing);
+	setupPageRoute(app, '/search', [], controllers.search.search);
+	setupPageRoute(app, '/reset/:code?', [middleware.delayLoading], controllers.reset);
+	setupPageRoute(app, '/tos', [], controllers.termsOfUse);
 
-    setupPageRoute(app, '/email/unsubscribe/:token', [], controllers.accounts.settings.unsubscribe);
-    app.post('/email/unsubscribe/:token', controllers.accounts.settings.unsubscribePost);
+	setupPageRoute(app, '/email/unsubscribe/:token', [], controllers.accounts.settings.unsubscribe);
+	app.post('/email/unsubscribe/:token', controllers.accounts.settings.unsubscribePost);
 
-    app.post('/compose', middleware.applyCSRF, controllers.composer.post);
-	
-    app.get('/anonymous-category', (req, res, next) => {
-        console.log('Anonymous category route hit');  // Log this to check if the route is triggered
-        categoriesController.renderAnonymousCategory(req, res);
-    });
+	app.post('/compose', middleware.applyCSRF, controllers.composer.post);
+
+	app.get('/anonymous-category', (req, res) => {
+		console.log('Anonymous category route hit');
+		categoriesController.renderAnonymousCategory(req, res);
+	});
 
 	app.get('/api/anonymous-posts', async (req, res) => {
 		try {
-			const posts = await categoriesController.getAnonymousPosts();  // You'll implement this in the controller
-			res.json(posts);  // Send the posts as JSON
+			const posts = await categoriesController.getAnonymousPosts();
+			res.json(posts);
 		} catch (err) {
 			console.error('Error fetching anonymous posts:', err);
 			res.status(500).json({ error: 'Internal Server Error' });

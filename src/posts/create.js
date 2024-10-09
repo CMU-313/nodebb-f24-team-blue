@@ -31,7 +31,7 @@ module.exports = function (Posts) {
 		// If the post is anonymous, set the `uid` to 0
 		if (isAnonymous) {
 			console.log('Creating anonymous post');
-			postUid = 0;  // Indicate anonymous user by setting `uid` to 0
+			postUid = 0; // Indicate anonymous user by setting `uid` to 0
 		}
 
 		if (data.toPid) {
@@ -41,7 +41,7 @@ module.exports = function (Posts) {
 		const pid = await db.incrObjectField('global', 'nextPid');
 		let postData = {
 			pid: pid,
-			uid: postUid,  // Use `postUid`, which could be 0 for anonymous posts
+			uid: postUid, // Use `postUid`, which could be 0 for anonymous posts
 			tid: tid,
 			content: content,
 			timestamp: timestamp,
@@ -64,7 +64,7 @@ module.exports = function (Posts) {
 		// If the post is anonymous, add it to the 'anonymous:posts' set
 		if (isAnonymous) {
 			console.log('Storing post in anonymous set');
-			await db.setAdd('anonymous:posts', postData.pid);  // Use pid instead of tid for post ID
+			await db.setAdd('anonymous:posts', postData.pid); // Use pid instead of tid for post ID
 		}
 
 		const topicData = await topics.getTopicFields(tid, ['cid', 'pinned']);
