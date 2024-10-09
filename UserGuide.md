@@ -100,10 +100,11 @@ The email notification feature allows users to receive an email when someone rep
 To test the email notification feature, follow these steps:
 
 1. **Create a Topic:**
-   - As a registered user, create a new topic in a category of your choice.
+   - As a registered user (prefably the admin), create a new topic in a category of your choice.
 
 2. **Reply as Another User:**
-   - Log in as another user and post a reply to the topic. The topic creator should receive an email notification for this reply.
+   - Log in as another user and post a reply to the topic (new users can only post every 120 seconds)! The topic creator should receive an email 
+     notification for this reply.
 
 3. **Verify the Notification Email:**
    - Check the topic creator's email inbox for the notification.
