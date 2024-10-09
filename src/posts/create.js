@@ -10,6 +10,7 @@ const topics = require('../topics');
 const categories = require('../categories');
 const groups = require('../groups');
 const privileges = require('../privileges');
+const emailer = require('../emailer'); // Import emailer to send email notifications
 
 module.exports = function (Posts) {
 	Posts.create = async function (data) {
@@ -51,8 +52,36 @@ module.exports = function (Posts) {
 		postData = result.post;
 		await db.setObject(`post:${postData.pid}`, postData);
 
-		const topicData = await topics.getTopicFields(tid, ['cid', 'pinned']);
+		const topicData = await topics.getTopicFields(tid, ['cid', 'pinned', 'uid', 'title']); // Fetch the topic creator's uid and title
 		postData.cid = topicData.cid;
+
+		const email = await user.getUserField(topicData.uid, 'email'); // Fetch the email
+		const username = await user.getUserField(topicData.uid, 'username'); // Fetch the username
+
+		// Send an email notification to the topic creator if it's a reply
+		if (tid && topicData.uid && uid !== topicData.uid) {
+			const emailParams = {
+				subject: `New reply to your topic: "${topicData.title}"`,
+				notification: {
+					type: 'reply',
+					content: postData.content, // Dynamic reply content
+					title: topicData.title, // Dynamic topic title
+					pid: postData.pid, // Post ID
+					topicSlug: topicData.title.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-'), // Topic slug
+				},
+				username: username, // Pass the username here
+			};
+
+			// Send the email
+			try {
+				await emailer.sendNotificationEmail('notification', email, 'en-GB', emailParams); // Adjust language if needed
+			} catch (err) {
+				console.error(
+					`Failed to send notification email for reply to topic "${topicData.title}":`,
+					err
+				);
+			}
+		}
 
 		await Promise.all([
 			db.sortedSetAdd('posts:pid', timestamp, postData.pid),

@@ -269,9 +269,14 @@ Emailer.send = async (template, uid, params) => {
 
 Emailer.sendToEmail = async (template, email, language, params) => {
 	const lang = language || meta.config.defaultLang || 'en-GB';
+
+	// Check if email is defined
+	if (!email) {
+		throw new Error('No recipient email address defined');
+	}
+
 	const unsubscribable = ['digest', 'notification'];
 
-	// Digests and notifications can be one-click unsubbed
 	let payload = {
 		template: template,
 		uid: params.uid,
@@ -313,7 +318,7 @@ Emailer.sendToEmail = async (template, email, language, params) => {
 
 	const data = await Plugins.hooks.fire('filter:email.modify', {
 		_raw: params,
-		to: email,
+		to: email, // Ensure email is passed here
 		from: meta.config['email:from'] || `no-reply@${getHostname()}`,
 		from_name: meta.config['email:from_name'] || 'NodeBB',
 		subject: `[${meta.config.title}] ${_.unescape(subject)}`,
@@ -328,26 +333,78 @@ Emailer.sendToEmail = async (template, email, language, params) => {
 		headers: params.headers,
 		rtl: params.rtl,
 	});
-	const usingFallback = !Plugins.hooks.hasListeners('filter:email.send') &&
-		!Plugins.hooks.hasListeners('static:email.send');
-	try {
-		if (Plugins.hooks.hasListeners('filter:email.send')) {
-			// Deprecated, remove in v1.19.0
-			await Plugins.hooks.fire('filter:email.send', data);
-		} else if (Plugins.hooks.hasListeners('static:email.send')) {
-			await Plugins.hooks.fire('static:email.send', data);
-		} else {
-			await Emailer.sendViaFallback(data);
-		}
-	} catch (err) {
-		if (err.code === 'ENOENT' && usingFallback) {
-			Emailer.fallbackNotFound = true;
-			throw new Error('[[error:sendmail-not-found]]');
-		} else {
-			throw err;
-		}
+
+	if (Plugins.hooks.hasListeners('filter:email.send')) {
+		await Plugins.hooks.fire('filter:email.send', data);
+	} else if (Plugins.hooks.hasListeners('static:email.send')) {
+		await Plugins.hooks.fire('static:email.send', data);
+	} else {
+		await Emailer.sendViaFallback(data);
 	}
 };
+
+// AI Assistance: This function was partially generated with GitHub Copilot to streamline the
+// process of sending notification emails, including handling dynamic content and email formatting.
+Emailer.sendNotificationEmail = async (template, email, language, params) => {
+	const lang = language || meta.config.defaultLang || 'en-GB';
+
+	// Check if email is defined
+	if (!email) {
+		throw new Error('No recipient email address defined');
+	}
+
+	const result = await Plugins.hooks.fire('filter:email.params', {
+		template: template,
+		email: email,
+		language: lang,
+		params: params,
+	});
+
+	template = result.template;
+	email = result.email;
+	params = result.params;
+
+	// HTML version with dynamic content
+	const html = `
+        <p>Hello ${params.username},</p>
+        <p>You have received a new reply in the topic "<strong>${(params.notification && params.notification.title) || 'Untitled Topic'}</strong>".</p>
+        <p><strong>Reply content:</strong></p>
+        <p>${(params.notification && params.notification.content) || 'No content available'}</p>
+		<p>To view the reply, visit: <a href="${nconf.get('url')}/topic/${(params.notification && params.notification.topicSlug) || ''}">${nconf.get('url')}/topic/${(params.notification && params.notification.topicSlug) || 'home'}</a></p>
+		`;
+
+	// Construct the plain text version as well
+	const text = `
+        Hello ${params.username},
+
+        You have received a new reply in the topic "${(params.notification && params.notification.title) || 'Untitled Topic'}".
+
+        Reply content: ${(params.notification && params.notification.content) || 'No content available'}
+
+		To view the reply, visit: ${nconf.get('url')}/topic/${(params.notification && params.notification.topicSlug) || 'home'}
+	`;
+
+	const data = await Plugins.hooks.fire('filter:email.modify', {
+		_raw: params,
+		to: email,
+		from: meta.config['email:from'] || `no-reply@${getHostname()}`,
+		from_name: meta.config['email:from_name'] || 'NodeBB',
+		subject: `[${meta.config.title}] ${_.unescape(params.subject)}`,
+		html: html, // Ensure HTML version includes dynamic content
+		text: text, // Ensure plain-text version includes dynamic content
+		headers: params.headers,
+	});
+
+	if (Plugins.hooks.hasListeners('filter:email.send')) {
+		await Plugins.hooks.fire('filter:email.send', data);
+	} else if (Plugins.hooks.hasListeners('static:email.send')) {
+		await Plugins.hooks.fire('static:email.send', data);
+	} else {
+		await Emailer.sendViaFallback(data);
+	}
+};
+
+
 
 Emailer.sendViaFallback = async (data) => {
 	// Some minor alterations to the data to conform to nodemailer standard

@@ -1,6 +1,10 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/ithVU1OO)
 # ![NodeBB](public/images/sm-card.png)
 
+# Updates
+As of Sprint 1, we have completed the search functionality where users can search for a topic by its title within a given category. All frontend code that is used for this instance of NodeBB can be located [here](https://github.com/CMU-313/nodebb-frontend-f24-team-blue). 
+We have not finished implementing the post anonymously feature (details are listed in the open issues).
+
 [![Workflow](https://github.com/CMU-313/NodeBB/actions/workflows/test.yaml/badge.svg)](https://github.com/CMU-313/NodeBB/actions/workflows/test.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/CMU-313/NodeBB/badge.svg)](https://coveralls.io/github/CMU-313/NodeBB)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=CMU-313_NodeBB&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=CMU-313_NodeBB)
