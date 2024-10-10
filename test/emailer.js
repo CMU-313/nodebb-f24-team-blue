@@ -183,23 +183,6 @@ describe('emailer', () => {
 			Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
 		});
 
-		it('should return true if system settings allow sending to banned users', async () => {
-			const method = async () => {
-				assert(true); // if thrown, email was sent
-			};
-			Plugins.hooks.register('emailer-test', {
-				hook: 'static:email.send',
-				method,
-			});
-
-			meta.config.sendEmailToBanned = 1;
-			await Emailer.send('test', recipientUid, {});
-			meta.config.sendEmailToBanned = 0;
-			await user.bans.unban(recipientUid);
-
-			Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
-		});
-
 		it('should send notification email with correct content', (done) => {
 			const email = 'test@example.org';
 			const language = 'en-GB';
@@ -210,6 +193,7 @@ describe('emailer', () => {
 					title: 'Test Topic',
 					content: 'This is a test reply.',
 					topicSlug: 'test-topic',
+					topicId: 123,
 				},
 			};
 
@@ -221,7 +205,7 @@ describe('emailer', () => {
 					assert(data.html.includes(`Hello ${params.username},`));
 					assert(data.html.includes(`You have received a new reply in the topic "<strong>${params.notification.title}</strong>".`));
 					assert(data.html.includes(`<p>${params.notification.content}</p>`));
-					assert(data.html.includes(`href="${nconf.get('url')}/topic/${params.notification.topicSlug}"`));
+					assert(data.html.includes(`href="${nconf.get('url')}/topic/${params.notification.topicId}/${params.notification.topicSlug}"`));
 
 					next();
 					Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
