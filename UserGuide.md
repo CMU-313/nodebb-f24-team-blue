@@ -114,6 +114,7 @@ To test the email notification feature, follow these steps:
 3. **Verify the Notification Email:**
    - Check the topic creator's email inbox for the notification.
    - Ensure the email contains the reply content, topic title, and a valid link to the reply.
+   - This email might go to spam so check that!
 
 #### Automated Tests
 
