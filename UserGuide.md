@@ -2,6 +2,11 @@
 
 This document provides instructions for using the new features added to NodeBB, along with steps for user testing and information about the automated tests implemented for each feature. Below is a detailed guide on how to use the the features that were implemented across both sprints.
 
+## IMPORTANT: 
+Due to the anonymous posting feature being located in a NodeBB composer repo, there is an additional repo that is needed to make it work.
+
+In order to install this repo, follow the same instructions as the frontend repo (the composer repo should be in the same directory as the main repo) and npm install it. To see changes, run `./nodebb build`. All repos are linked on the gradescope assignment.
+
 ---
 
 ### Search Bar Feature
@@ -70,7 +75,7 @@ The tests for the email notification feature can be found in the `test/topics.js
    - Loops through the array of topics and checks that each topic in that array is anonymous
    - Cleans up by deleting the anonymous topic that was created at the beginning from the Redis DB
 
-### Test Case Justification
+#### Test Case Justification
 
 Because this functionality only covers making an anonymous topic and then rendering them, these three tests (creating a anonymous topic, create a topic that is not anonymous, and render anonymous topics) are enough. This is because these three scenarios represent all the ways that an user can interact with this feature.
 
@@ -121,3 +126,6 @@ The tests for the email notification feature can be found in the `test/emailer.j
 - **Error Scenarios:**
    - Tests that no email is sent when there is no valid recipient email or when the topic creator is banned.
 
+### Test Case Justification
+
+Because this functionality only works when making a reply to another post by another user, two tests (one success and one failure) are enough to cover all possible scenarios for this feature.
