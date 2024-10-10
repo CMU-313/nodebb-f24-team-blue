@@ -29,7 +29,7 @@ The test for the search bar feature can be found in the `test/topics.js` file.
      `searchTopics` API scans the  Redis DB for topics whose title have the search term in it)
    - Calls the `searchTopics` API and verifies that the array of topics it returns all have the search term (in this case, "search") within it
 
-### Test Case Justification
+#### Test Case Justification
 
 Since there is only one search bar, that means the user can only trigger this feature by entering a search term. While it is possible to create more unit tests for more search terms, the code/logic executed is more or less the same for any search term entered.
 
