@@ -19,7 +19,7 @@ jobs:
       ./.github/workflows/test.yaml
 
   build-and-deploy:
-    if: github.repository == 'cmu-313/nodebb-f24-team-blue'
+    if: github.repository == 'CMU-313/nodebb-f24-team-blue'
     needs: lint-and-test
 
     runs-on: ubuntu-latest
@@ -43,12 +43,24 @@ jobs:
             "redis:host": "${{ secrets.REDIS_HOST }}",
             "redis:port": "6379",
             "redis:password": "${{ secrets.REDIS_PASSWORD }}" }'
+            
+      - name: Set up frontend repo
+        run: |
+          npm install https://github.com/CMU-313/nodebb-frontend-f24-team-blue.git
           
+      - name: Set up composer repo
+        run: |
+          npm install https://github.com/Abdulaziz57/TeamBlue-nodebb-plugin-composer-default.git
+          
+      - name: Rebuild NodeBB Templates
+        run: |
+          ./nodebb build
+        
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'nodebb-f24'
+          app-name: 'nodebb-team-blue'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BFAB97B1AB1441ACA7C63280F91AD3F3 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CFFE7AE3EF584F5D90E2870D67D6AB9E }}
           package: .
