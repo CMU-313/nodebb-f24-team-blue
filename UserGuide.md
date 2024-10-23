@@ -83,7 +83,8 @@ Because this functionality only covers making an anonymous topic and then render
 
 ### Email Notification Feature
 
-IMPORTANT: Email notifications will not work on the live Azure deployment as an email server on Azure requires creating more resources. Because of this, testing this feature can only be done locally.
+IMPORTANT: Email notifications will not work on the live Azure deployment as an email server on Azure requires creating more resources. Because of this, testing this feature can only be done locally. 
+Permission to skip deploying this feature to Azure was granted by Professor Rohan Padye.
 
 #### Overview
 The email notification feature allows users to receive an email when someone replies to a topic they have created. The goal is to ensure users are kept informed about conversations happening on their topics.
