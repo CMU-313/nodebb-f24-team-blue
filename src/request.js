@@ -1,4 +1,5 @@
 'use strict';
+/* global fetch, AbortSignal */
 
 const { CookieJar } = require('tough-cookie');
 const fetchCookie = require('fetch-cookie').default;

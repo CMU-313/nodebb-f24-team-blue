@@ -5,5 +5,8 @@
       "MY_GLOBAL": true
     },
     "esversion": 8,
-    "node": true
+    "node": true,
+    "-W018": false,  // Disable confusing use of '!' error
+    "-W119": false,  // Disable "object spread property" error
+    "-W083": false  // Functions declared within loops referencing an outer scoped variable may lead to confusing semantics
   }

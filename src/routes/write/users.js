@@ -7,10 +7,12 @@ const routeHelpers = require('../helpers');
 
 const { setupApiRoute } = routeHelpers;
 
+/* jshint -W098 */
 // eslint-disable-next-line no-unused-vars
 function guestRoutes() {
 	// like registration, login...
 }
+/* jshint +W098 */
 
 function authenticatedRoutes() {
 	const middlewares = [middleware.ensureLoggedIn];
