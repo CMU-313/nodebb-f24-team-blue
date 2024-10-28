@@ -7,6 +7,10 @@ Due to the anonymous posting feature being located in a NodeBB composer repo, th
 
 In order to install this repo, follow the same instructions as the frontend repo (the composer repo should be in the same directory as the main repo) and npm install it. To see changes, run `./nodebb build`. All repos are linked on the gradescope assignment.
 
+## Admin credentials:
+Username: admin
+Password: 123456!
+
 ---
 
 ### Search Bar Feature
