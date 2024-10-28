@@ -55,8 +55,9 @@ jobs:
       - name: Rebuild NodeBB Templates
         run: |
           ./nodebb build
-          - name: Install JSHint
-          run: npm install -g jshint
+          
+      - name: Install JSHint
+        run: npm install -g jshint
   
       - name: Run JSHint on src directory
         run: jshint src --exclude node_modules
