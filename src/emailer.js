@@ -353,6 +353,8 @@ Emailer.sendNotificationEmail = async (template, email, language, params) => {
 		throw new Error('No recipient email address defined');
 	}
 
+	const tid = params.notification.topicId;
+
 	const result = await Plugins.hooks.fire('filter:email.params', {
 		template: template,
 		email: email,
@@ -366,22 +368,22 @@ Emailer.sendNotificationEmail = async (template, email, language, params) => {
 
 	// HTML version with dynamic content
 	const html = `
-        <p>Hello ${params.username},</p>
-        <p>You have received a new reply in the topic "<strong>${(params.notification && params.notification.title) || 'Untitled Topic'}</strong>".</p>
-        <p><strong>Reply content:</strong></p>
-        <p>${(params.notification && params.notification.content) || 'No content available'}</p>
-		<p>To view the reply, visit: <a href="${nconf.get('url')}/topic/${(params.notification && params.notification.topicSlug) || ''}">${nconf.get('url')}/topic/${(params.notification && params.notification.topicSlug) || 'home'}</a></p>
-		`;
+		<p>Hello ${params.username},</p>
+		<p>You have received a new reply in the topic "<strong>${(params.notification && params.notification.title) || 'Untitled Topic'}</strong>".</p>
+		<p><strong>Reply content:</strong></p>
+		<p>${(params.notification && params.notification.content) || 'No content available'}</p>
+		<p>To view the reply, visit: <a href="${nconf.get('url')}/topic/${(params.notification && params.notification.topicId) || tid}/${(params.notification && params.notification.topicSlug) || ''}">${nconf.get('url')}/topic/${(params.notification && params.notification.topicId) || tid}/${(params.notification && params.notification.topicSlug) || ''}</a></p>
+	`;
 
-	// Construct the plain text version as well
+	// Plain text version
 	const text = `
-        Hello ${params.username},
+		Hello ${params.username},
 
-        You have received a new reply in the topic "${(params.notification && params.notification.title) || 'Untitled Topic'}".
+		You have received a new reply in the topic "${(params.notification && params.notification.title) || 'Untitled Topic'}".
 
-        Reply content: ${(params.notification && params.notification.content) || 'No content available'}
+		Reply content: ${(params.notification && params.notification.content) || 'No content available'}
 
-		To view the reply, visit: ${nconf.get('url')}/topic/${(params.notification && params.notification.topicSlug) || 'home'}
+		To view the reply, visit: ${nconf.get('url')}/topic/${(params.notification && params.notification.topicId) || tid}/${(params.notification && params.notification.topicSlug) || 'home'}
 	`;
 
 	const data = await Plugins.hooks.fire('filter:email.modify', {

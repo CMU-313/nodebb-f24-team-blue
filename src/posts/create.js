@@ -67,11 +67,11 @@ module.exports = function (Posts) {
 					content: postData.content, // Dynamic reply content
 					title: topicData.title, // Dynamic topic title
 					pid: postData.pid, // Post ID
+					topicId: tid, // Correct topic ID reference here
 					topicSlug: topicData.title.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-'), // Topic slug
 				},
 				username: username, // Pass the username here
 			};
-
 			// Send the email
 			try {
 				await emailer.sendNotificationEmail('notification', email, 'en-GB', emailParams); // Adjust language if needed
