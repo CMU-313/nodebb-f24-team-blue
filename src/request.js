@@ -2,7 +2,6 @@
 
 const { CookieJar } = require('tough-cookie');
 const fetchCookie = require('fetch-cookie').default;
-/* global fetch, AbortSignal */
 
 exports.jar = function () {
 	return new CookieJar();

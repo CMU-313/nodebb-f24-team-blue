@@ -2,7 +2,9 @@
     "undef": true,
     "unused": true,
     "globals": {
-      "MY_GLOBAL": true
+      "MY_GLOBAL": true,
+      "fetch": true,
+      "AbortSignal": true
     },
     "esversion": 8,
     "node": true,
