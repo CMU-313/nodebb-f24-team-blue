@@ -130,7 +130,8 @@ module.exports = function (User) {
 
 	async function incrementUserFieldAndSetBy(uid, field, set, value) {
 		value = parseInt(value, 10);
-		if (!value || !field || !(parseInt(uid, 10) > 0)) {
+		// Confusing use of !
+		if (!value || !field || (parseInt(uid, 10) <= 0)) {
 			return;
 		}
 		const exists = await User.exists(uid);

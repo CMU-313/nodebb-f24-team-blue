@@ -170,7 +170,8 @@ User.getPrivileges = async function (uid) {
 };
 
 User.isPrivileged = async function (uid) {
-	if (!(parseInt(uid, 10) > 0)) {
+	// Confusing use of !
+	if (parseInt(uid, 10) <= 0) {
 		return false;
 	}
 	const results = await User.getPrivileges(uid);

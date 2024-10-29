@@ -6,9 +6,7 @@
       "fetch": true,
       "AbortSignal": true
     },
-    "esversion": 8,
+    "esversion": 9,
     "node": true,
-    "-W018": false,  // Disable confusing use of '!' error
-    "-W119": false,  // Disable "object spread property" error
     "-W083": false  // Functions declared within loops referencing an outer scoped variable may lead to confusing semantics
   }

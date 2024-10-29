@@ -565,7 +565,8 @@ module.exports = function (Topics) {
 	};
 
 	Topics.followTag = async (tag, uid) => {
-		if (!(parseInt(uid, 10) > 0)) {
+		// Confusing use of !
+		if (parseInt(uid, 10) <= 0) {
 			throw new Error('[[error:not-logged-in]]');
 		}
 		const now = Date.now();
@@ -577,7 +578,8 @@ module.exports = function (Topics) {
 	};
 
 	Topics.unfollowTag = async (tag, uid) => {
-		if (!(parseInt(uid, 10) > 0)) {
+		// Confusing use of !
+		if (parseInt(uid, 10) <= 0) {
 			throw new Error('[[error:not-logged-in]]');
 		}
 		await db.sortedSetRemoveBulk([
