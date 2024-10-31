@@ -1,0 +1,12 @@
+{
+    "undef": true,
+    "unused": true,
+    "globals": {
+      "MY_GLOBAL": true,
+      "fetch": true,
+      "AbortSignal": true
+    },
+    "esversion": 9,
+    "node": true,
+    "-W083": false  // Functions declared within loops referencing an outer scoped variable may lead to confusing semantics
+  }

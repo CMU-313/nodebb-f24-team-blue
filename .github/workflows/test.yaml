@@ -73,9 +73,15 @@ jobs:
             }
         run: |
           node app --setup="${SETUP}" --ci="${CI}"
-
+      
       - name: Run ESLint
         run: npm run lint
+        
+      - name: Install JSHint
+        run: npm install -g jshint
+  
+      - name: Run JSHint on src directory
+        run: jshint src --exclude node_modules
 
       - name: Node tests
         run: npm test

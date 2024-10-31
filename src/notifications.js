@@ -329,7 +329,8 @@ Notifications.markRead = async function (nid, uid) {
 };
 
 Notifications.markUnread = async function (nid, uid) {
-	if (!(parseInt(uid, 10) > 0) || !nid) {
+	// Confusing use of !
+	if ((parseInt(uid, 10) <= 0) || !nid) {
 		return;
 	}
 	const notification = await db.getObject(`notifications:${nid}`);
@@ -346,7 +347,8 @@ Notifications.markUnread = async function (nid, uid) {
 
 Notifications.markReadMultiple = async function (nids, uid) {
 	nids = nids.filter(Boolean);
-	if (!Array.isArray(nids) || !nids.length || !(parseInt(uid, 10) > 0)) {
+	// Confusing use of !
+	if (!Array.isArray(nids) || !nids.length || (parseInt(uid, 10) <= 0)) {
 		return;
 	}
 

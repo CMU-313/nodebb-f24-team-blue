@@ -12,7 +12,8 @@ module.exports = function (User) {
 	User.auth = {};
 
 	User.auth.logAttempt = async function (uid, ip) {
-		if (!(parseInt(uid, 10) > 0)) {
+		// Confusing use of !
+		if (parseInt(uid, 10) <= 0) {
 			return;
 		}
 		const exists = await db.exists(`lockout:${uid}`);
@@ -38,7 +39,8 @@ module.exports = function (User) {
 	};
 
 	User.auth.getFeedToken = async function (uid) {
-		if (!(parseInt(uid, 10) > 0)) {
+		// Confusing use of !
+		if (parseInt(uid, 10) <= 0) {
 			return;
 		}
 		const _token = await db.getObjectField(`user:${uid}`, 'rss_token');
@@ -100,7 +102,8 @@ module.exports = function (User) {
 	}
 
 	User.auth.addSession = async function (uid, sessionId) {
-		if (!(parseInt(uid, 10) > 0)) {
+		// Confusing use of !
+		if (parseInt(uid, 10) <= 0) {
 			return;
 		}
 
