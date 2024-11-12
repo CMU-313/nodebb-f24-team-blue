@@ -10,6 +10,7 @@ const topics = require('../topics');
 const categories = require('../categories');
 const groups = require('../groups');
 const privileges = require('../privileges');
+const translate = require('../translate');
 const emailer = require('../emailer'); // Import emailer to send email notifications
 
 module.exports = function (Posts) {
@@ -20,6 +21,7 @@ module.exports = function (Posts) {
 		const content = data.content.toString();
 		const timestamp = data.timestamp || Date.now();
 		const isMain = data.isMain || false;
+		const [isEnglish, translatedContent] = await translate.translate(data);
 
 		if (!uid && parseInt(uid, 10) !== 0) {
 			throw new Error('[[error:invalid-uid]]');
@@ -36,6 +38,8 @@ module.exports = function (Posts) {
 			tid: tid,
 			content: content,
 			timestamp: timestamp,
+			translatedContent: translatedContent,
+			isEnglish: isEnglish,
 		};
 
 		if (data.toPid) {
